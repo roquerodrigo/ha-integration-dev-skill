@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ha-integration-dev-skill",
+  "description": "Claude Code plugin for developing Home Assistant custom integrations",
+  "owner": {
+    "name": "ha-integration-dev-skill"
+  },
+  "metadata": {
+    "description": "Conventions, patterns, and code review for Home Assistant custom integrations and Python SDKs",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "ha-integration-dev",
+      "source": "./plugins/ha-integration-dev",
+      "description": "Conventions, patterns, and code review for Home Assistant custom integrations and their Python SDKs.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "keywords": ["home-assistant", "hacs", "integration", "python", "sdk"],
+      "category": "development"
+    }
+  ]
+}

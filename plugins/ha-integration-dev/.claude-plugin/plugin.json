@@ -1,0 +1,9 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "ha-integration-dev",
+  "version": "1.0.0",
+  "description": "Conventions, patterns, and code review for Home Assistant custom integrations and their Python SDKs.",
+  "license": "MIT",
+  "keywords": ["home-assistant", "hacs", "integration", "python", "sdk"],
+  "skills": "./skills/"
+}
