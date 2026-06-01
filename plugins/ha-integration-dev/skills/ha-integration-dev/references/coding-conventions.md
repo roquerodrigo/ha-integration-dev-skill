@@ -91,7 +91,10 @@ Within an entity class, declare members top-to-bottom in this order:
   Do **not** assign `_attr_unique_id` in `__init__`. If the only reason an
   `__init__` exists is to set `_attr_unique_id`, drop the `__init__` and use the
   property instead. (This matches the blueprint, which wires `unique_id` as a
-  `@property` everywhere.)
+  `@property` everywhere.) This is a **hard blueprint invariant** — it holds
+  even if a repo's older `CODE_STYLE.md` still permits `_attr_unique_id`; migrate
+  such code to the property form rather than treating the repo style as an
+  override (unlike the coverage gate, which the repo *does* get to set).
 
 ## Entity categories and registry defaults
 

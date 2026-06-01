@@ -25,12 +25,16 @@ tests/
 
 ## Coverage gate
 
-Enforce a minimum coverage via `pyproject.toml` (`--cov-fail-under=90`).
+Enforce a minimum coverage via `pyproject.toml` (`--cov-fail-under=N`).
 
-- **90% for every repo** — integrations and companion SDKs alike, including
-  hardware-heavy paths (BLE, USB, proprietary binary protocols). Mock the
-  transport/byte layer rather than lowering the gate; a sub-90 gate is debt to
-  repay, not an acceptable resting state.
+- **Default target: 90%** for integrations and companion SDKs alike, including
+  hardware-heavy paths (BLE, USB, proprietary binary protocols) — mock the
+  transport/byte layer rather than lowering the bar.
+- **The repo's own configured gate is the source of truth.** Whatever
+  `--cov-fail-under` the repo's `pyproject.toml` / `CODE_STYLE.md` sets wins —
+  a higher gate (e.g. the blueprint's 95) *or* a lower one (e.g. an SDK at 60).
+  In review, treat a gate below 90 as drift worth flagging (debt to repay), not
+  a failure to block on; never "fail" a repo for honouring its own lower gate.
 
 ## conftest.py pattern
 
