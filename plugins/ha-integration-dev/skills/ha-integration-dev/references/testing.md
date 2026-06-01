@@ -27,10 +27,14 @@ tests/
 
 Enforce a minimum coverage via `pyproject.toml` (`--cov-fail-under=N`).
 
-- **Target 90%** for new integrations.
-- Repos with hardware-heavy paths that are hard to fake (BLE, USB,
-  proprietary binary protocols) may temporarily run at a lower gate, but
-  that should be treated as debt to repay, not the resting state.
+- **Default target: 90%** for integrations and companion SDKs alike, including
+  hardware-heavy paths (BLE, USB, proprietary binary protocols) — mock the
+  transport/byte layer rather than lowering the bar.
+- **The repo's own configured gate is the source of truth.** Whatever
+  `--cov-fail-under` the repo's `pyproject.toml` / `CODE_STYLE.md` sets wins —
+  a higher gate (e.g. the blueprint's 95) *or* a lower one (e.g. an SDK at 60).
+  In review, treat a gate below 90 as drift worth flagging (debt to repay), not
+  a failure to block on; never "fail" a repo for honouring its own lower gate.
 
 ## conftest.py pattern
 
@@ -129,6 +133,9 @@ doesn't waste downstream minutes.
 # first time setup
 uv sync --group dev --group lint
 
-# verify
-scripts/lint && pytest
+# verify — run the tools directly (no scripts/lint wrapper)
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy custom_components/<domain>   # or src/ for an SDK
+uv run pytest
 ```

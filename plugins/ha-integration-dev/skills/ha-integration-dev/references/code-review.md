@@ -9,7 +9,10 @@ when flagging a violation. Hard rules first, judgment-calls later.
 - Return type is `DataUpdateCoordinator[PayloadType]` with a concrete
   TypedDict or dataclass — never `Any` or bare `dict`.
 - `_async_update_data()` maps auth errors → `ConfigEntryAuthFailed` and
-  comms errors → `UpdateFailed`. No raw upstream/SDK exception escapes.
+  comms errors → `UpdateFailed`. No raw upstream/SDK exception escapes. A
+  documented grace-period / last-known-data fallback (returning the previous
+  payload for a known-flaky upstream) is an accepted alternative to raising
+  `UpdateFailed` — don't flag it when the degradation strategy is explicit.
 - First setup uses `await coordinator.async_config_entry_first_refresh()`,
   not `async_refresh()`.
 - `always_update=False` whenever the payload supports `__eq__` cleanly.
@@ -50,6 +53,8 @@ when flagging a violation. Hard rules first, judgment-calls later.
 - Naming `<Domain><Name><Platform>` (e.g. `<Domain>BatterySensor`).
 - State exposed via `@property`, not `_attr_*` assigned in `__init__`.
   `__init__` omitted when it would only call `super().__init__(...)`.
+- `unique_id` exposed as a `@property` (the only permitted form). Flag any
+  `_attr_unique_id` assigned in `__init__`.
 - Base entity sets `_attr_attribution`, `_attr_has_entity_name = True`, and
   `device_info` as a `@property`.
 - Maintenance/telemetry entities (signal strength, firmware version,
@@ -85,6 +90,8 @@ when flagging a violation. Hard rules first, judgment-calls later.
 - `cast("TypedDictName", value)` at HA framework boundaries that return
   permissive types (`entry.data`, etc.).
 - Any `# type: ignore[override]` carries a one-line reason.
+- On `requires-python >= 3.14`, `except A, B:` without parentheses (PEP 758) is
+  valid — do not flag it as a bug.
 
 ## Imports & module hygiene
 
@@ -159,4 +166,7 @@ when flagging a violation. Hard rules first, judgment-calls later.
 
 ## Verification gate
 
-- `scripts/lint && pytest` was run locally and passed before review.
+- The lint commands and `pytest` were run locally and passed before review —
+  invoked directly (`ruff format --check`, `ruff check`, `mypy <path>`,
+  `pytest`), prefixed with `uv run` in uv-managed repos. No `scripts/lint`
+  wrapper required.
