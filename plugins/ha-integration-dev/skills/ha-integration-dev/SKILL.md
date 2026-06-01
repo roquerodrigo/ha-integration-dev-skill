@@ -2,9 +2,10 @@
 name: ha-integration-dev
 description: >-
   This skill should be used when working on a Home Assistant custom integration
-  (any repo with a `custom_components/<domain>/` directory) or a companion
-  Python/TypeScript SDK that wraps a device or cloud API for such an
-  integration. Use it when the user asks to add entities, fix bugs, refactor,
+  (a repo with a `custom_components/<domain>/` directory that follows the
+  blueprint conventions) or a companion Python SDK that wraps a device or cloud
+  API and is consumed by such an integration. Use it when the user asks to add
+  entities, fix bugs, refactor,
   add tests, review code, scaffold a new integration from a blueprint, bump
   dependencies, or apply any code change in such a repo. Also use when the user
   mentions HACS, config flow, coordinator, reauth, translations, quality scale,
@@ -34,24 +35,48 @@ Skip this skill when working on:
   "config flow" outside the HA context.
 - **HA YAML configuration / automations / dashboards.** This skill is for
   Python code in `custom_components/`, not user-side YAML.
+- **Standalone SDKs / API clients with no HA integration consuming them.** The
+  companion-SDK case applies only when a `custom_components/<domain>/`
+  integration actually imports the package. A device/cloud API client that no
+  HA integration depends on is out of scope — match its own house style.
+- **MCP servers and other generic API wrappers.** Talking to a device or cloud
+  API does not by itself bring a repo into scope; without an HA integration
+  consumer, skip the skill.
+- **TypeScript / non-Python repos.** This skill's conventions and gates are
+  Python-only.
 
 ## Verification workflow
 
-After every code change, run lint then tests before declaring done:
+After every code change, run lint then tests before declaring done. Run the
+tools **directly** — do not rely on a `scripts/lint` wrapper (the convention is
+to drop that wrapper and invoke the underlying commands):
 
 ```bash
-scripts/lint && pytest
+# Python repos — prefix each with `uv run` when the repo has a uv.lock:
+ruff format --check .
+ruff check .
+mypy <path>            # custom_components/<domain> for integrations, src/ for SDKs
+pytest
 ```
 
-`scripts/lint` typically runs `ruff format`, `ruff check --fix`, and `mypy`.
-Both gates should mirror CI. Skip only for README-only edits.
+- In a uv-managed repo the lint tools live in the `lint` dependency group and
+  are not on `PATH`; run via `uv run --group lint …` (and `uv sync` / an
+  editable install first so `pytest` can import a `src/`-layout package).
+- For a **read-only review**, use the non-mutating variants above
+  (`ruff format --check`, `ruff check` without `--fix`) so you never modify the
+  tree just to pass the gate.
+- Both gates should mirror CI. Skip only for README-only edits.
 
-## Always read CODE_STYLE.md first
+## Always read the repo's style guide first
 
-If the repo has a `CODE_STYLE.md`, treat it as the single source of truth for
-conventions. Read it before adding or restructuring any file/class/function.
-This skill summarises cross-integration patterns; per-repo specifics live in
-`CODE_STYLE.md`.
+If the repo has a `CODE_STYLE.md`, `CLAUDE.md`, or `AGENTS.md`, treat it as the
+single source of truth for conventions. Read it before adding or restructuring
+any file/class/function, and let its rules **override** this skill's defaults
+where they conflict — a repo may deliberately diverge (e.g. on commit/string
+language or payload typing). This skill summarises cross-integration patterns;
+per-repo specifics live in that guide. Before trusting a stale-looking claim in
+it (a referenced config file, a coverage percentage), cross-check against the
+repo's actual `pyproject.toml` / CI and flag the drift.
 
 ---
 

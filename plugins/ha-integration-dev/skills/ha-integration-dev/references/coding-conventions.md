@@ -80,12 +80,18 @@ Within an entity class, declare members top-to-bottom in this order:
 - Always prefer `@property` over assigning `_attr_*` values in `__init__`.
 - When `__init__` would only call `super().__init__(...)`, omit it.
 - Class-level constants like `_attr_attribution = ATTRIBUTION` are fine.
-- **`_attr_unique_id` is the canonical exception.** An `__init__` that calls
-  `super().__init__(...)` and assigns `_attr_unique_id` from a stable
-  per-instance key (e.g.
-  `self._attr_unique_id = f"{coordinator.config_entry.entry_id}_battery"`)
-  is the standard wiring — do **not** turn `unique_id` into a `@property`
-  just to satisfy "omit `__init__`".
+- **`unique_id` must be a `@property` — this is the only permitted form.**
+  Expose it as a computed property returning a stable per-instance key:
+  ```python
+  @property
+  def unique_id(self) -> str:
+      """Return a stable unique id for this entity."""
+      return f"{self.coordinator.config_entry.entry_id}_battery"
+  ```
+  Do **not** assign `_attr_unique_id` in `__init__`. If the only reason an
+  `__init__` exists is to set `_attr_unique_id`, drop the `__init__` and use the
+  property instead. (This matches the blueprint, which wires `unique_id` as a
+  `@property` everywhere.)
 
 ## Entity categories and registry defaults
 
@@ -177,6 +183,13 @@ raise <Domain>ApiClientError(
 )
 ```
 
+## Python version notes
+
+- On `requires-python >= 3.14`, the parenthesis-free multi-type `except`
+  (PEP 758, e.g. `except ValueError, TypeError:`) is valid syntax. Do **not**
+  flag it as a bug or "Python 2 leftover" — it is equivalent to
+  `except (ValueError, TypeError):`.
+
 ## Conventional commits
 
 All repos use Conventional Commits. Release-please parses them for version
@@ -246,22 +259,18 @@ files = ["custom_components/<domain>"]
 ignore_missing_imports = true
 follow_imports = "silent"
 strict_optional = true
-no_implicit_optional = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_any_generics = true
-disallow_any_explicit = true
-check_untyped_defs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unreachable = true
-warn_return_any = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
 
 # Relax inside tests so fixtures/mocks stay readable.
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
-disallow_any_explicit = false
 check_untyped_defs = false
 
 [tool.ruff]
@@ -302,9 +311,10 @@ max-complexity = 25
 
 ## Pre-commit
 
-`.pre-commit-config.yaml` mirrors `scripts/lint` and adds repo-hygiene
-hooks. As with `pyproject.toml`, copy the **shape**, not the literal `rev`
-strings — bump revs via `pre-commit autoupdate`.
+`.pre-commit-config.yaml` mirrors the lint commands (`ruff format`,
+`ruff check --fix`, `mypy`) and adds repo-hygiene hooks. As with
+`pyproject.toml`, copy the **shape**, not the literal `rev` strings — bump revs
+via `pre-commit autoupdate`.
 
 ```yaml
 # .pre-commit-config.yaml

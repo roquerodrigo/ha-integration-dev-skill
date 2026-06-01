@@ -122,8 +122,13 @@ Mirror the production layout in `tests/`. Target 90% coverage. At minimum:
 
 ## Step 12: Verify
 
+Run the tools directly (no `scripts/lint` wrapper):
+
 ```bash
-scripts/lint && pytest
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy custom_components/<new_domain>
+uv run pytest
 ```
 
 ## Step 13: Set up GitHub

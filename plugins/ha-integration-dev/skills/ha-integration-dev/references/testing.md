@@ -25,12 +25,12 @@ tests/
 
 ## Coverage gate
 
-Enforce a minimum coverage via `pyproject.toml` (`--cov-fail-under=N`).
+Enforce a minimum coverage via `pyproject.toml` (`--cov-fail-under=90`).
 
-- **Target 90%** for new integrations.
-- Repos with hardware-heavy paths that are hard to fake (BLE, USB,
-  proprietary binary protocols) may temporarily run at a lower gate, but
-  that should be treated as debt to repay, not the resting state.
+- **90% for every repo** — integrations and companion SDKs alike, including
+  hardware-heavy paths (BLE, USB, proprietary binary protocols). Mock the
+  transport/byte layer rather than lowering the gate; a sub-90 gate is debt to
+  repay, not an acceptable resting state.
 
 ## conftest.py pattern
 
@@ -129,6 +129,9 @@ doesn't waste downstream minutes.
 # first time setup
 uv sync --group dev --group lint
 
-# verify
-scripts/lint && pytest
+# verify — run the tools directly (no scripts/lint wrapper)
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy custom_components/<domain>   # or src/ for an SDK
+uv run pytest
 ```

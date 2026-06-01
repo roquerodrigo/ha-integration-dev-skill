@@ -100,7 +100,10 @@ class <Domain>Data:
 - Pass `always_update=False` when the payload compares cleanly with `__eq__`.
 - Error mapping inside `_async_update_data`:
   - Authentication errors → `raise ConfigEntryAuthFailed(...)` (starts reauth)
-  - Communication errors → `raise UpdateFailed(...)` (HA retries)
+  - Communication errors → `raise UpdateFailed(...)` (HA retries), unless the
+    coordinator implements an explicit, documented degradation strategy
+    (grace-period / last-known-data) for a known-flaky upstream — then it may
+    return the previous payload instead of raising.
 
 ### Multiple coordinators
 
