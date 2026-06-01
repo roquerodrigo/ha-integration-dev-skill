@@ -14,10 +14,10 @@ Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` /
 `tuple` / `set`, `dict[str, Any]`, `Mapping[str, Any]`.
 
 Required:
-- `TypedDict` for known dict / JSON shapes (canonical home: `data.py`).
+- `TypedDict` for known dict / JSON shapes (one per file under `data/`).
 - `@dataclass` for structured records (e.g. runtime data).
 - Named `type` aliases for recursive / shared shapes: `JsonPrimitive`,
-  `JsonValue`, `JsonObject` in `data.py`.
+  `JsonValue`, `JsonObject` in `data/__init__.py`.
 - `frozenset[str]` / `tuple[str, ...]` for fixed string collections.
 - `cast("TypedDictName", value)` at HA framework boundaries that hand us a
   permissive type (e.g. `entry.data` → `MappingProxyType[str, Any]`).
@@ -39,10 +39,11 @@ a one-line comment.
 
 See `architecture.md` for the full layout. The three load-bearing rules:
 
-- **One class per file.** TypedDicts and `type` aliases are the only
-  exception — they group into `data.py`. Helper functions may live
-  alongside the single class that uses them (e.g. `_verify_response`
-  next to the API client in `api.py`).
+- **One class per file — no exceptions.** TypedDicts and dataclasses each
+  get their own file under `data/` (a package with `__init__.py`
+  re-exporting public symbols). `type` aliases live in `data/__init__.py`.
+  Helper functions may live alongside the single class that uses them
+  (e.g. `_verify_response` next to the API client in `api.py`).
 - **One entity per class.** Never share a generic class parametrised by an
   `EntityDescription` subclass with callable fields like `value_fn` or
   `action_fn`. Encode behaviour directly via `@property` and class-level

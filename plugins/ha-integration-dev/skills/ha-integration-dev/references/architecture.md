@@ -9,7 +9,9 @@ layout (legend: **required**, *conditional*, _optional_):
 custom_components/<domain>/
 ├── __init__.py              # required — async_setup_entry / async_unload_entry / async_reload_entry only
 ├── const.py                 # required — DOMAIN, LOGGER, ATTRIBUTION, defaults
-├── data.py                  # required — TypedDicts, dataclass, ConfigEntry type alias
+├── data/                    # required — one TypedDict/dataclass per file, type aliases in __init__.py
+│   ├── __init__.py          #   re-exports + type aliases (ConfigEntry, JsonPrimitive, etc.)
+│   └── <type_name>.py       #   one file per TypedDict or dataclass
 ├── entity.py                # required — base entity (CoordinatorEntity subclass)
 ├── coordinator.py           # required — DataUpdateCoordinator[PayloadType]
 ├── <purpose>_coordinator.py # *conditional — when polling cadences differ (e.g. map_coordinator.py)
@@ -70,14 +72,18 @@ do not have every one. The variants worth knowing:
 
 ## One class per file
 
-Every file contains one top-level class. TypedDicts and `type` aliases are
-exceptions — they group into `data.py`. Helper functions may live alongside
-the single class that uses them (e.g. `_verify_response_or_raise` in `api.py`).
+Every file contains one top-level class — this includes TypedDicts and
+dataclasses, which each get their own file under `data/` (a package with an
+`__init__.py` re-exporting the public symbols). `type` aliases live in
+`data/__init__.py` alongside the re-exports. Helper functions may live
+alongside the single class that uses them (e.g. `_verify_response_or_raise`
+in `api.py`).
 
 ## Runtime data
 
 All integration state lives on `entry.runtime_data: <Domain>Data`, a
-`@dataclass` defined in `data.py`. Never use `hass.data[DOMAIN]`. The
+`@dataclass` defined in `data/runtime.py` (re-exported from
+`data/__init__.py`). Never use `hass.data[DOMAIN]`. The
 `runtime_data` is automatically discarded on unload.
 
 ```python

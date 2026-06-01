@@ -33,8 +33,9 @@ when flagging a violation. Hard rules first, judgment-calls later.
 
 ## File organisation
 
-- One class per file. Flag any module that ships two top-level classes
-  (TypedDicts and `type` aliases in `data.py` are the exception).
+- One class per file — no exceptions. TypedDicts and dataclasses each get
+  their own file under `data/` (a package). `type` aliases live in
+  `data/__init__.py`. Flag any module with two or more top-level classes.
 - A platform with multiple entities is a package
   (`sensor/__init__.py` + `sensor/<entity>.py`), not a single
   `sensor.py` stacking the classes.
