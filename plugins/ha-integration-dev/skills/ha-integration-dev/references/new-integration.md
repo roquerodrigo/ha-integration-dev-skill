@@ -31,10 +31,19 @@ reset — the global rename in Step 3 will not fix them:
   blueprint's README describes setup steps, entity tables, and architecture
   specific to the blueprint; none of that applies. At minimum include: what
   the integration does, how to install, and how to configure.
-- **`brand/`** — replace **all** image assets (`icon.png`, `icon@2x.png`,
-  `logo.png`, `logo@2x.png`, `icon.svg`) with artwork for the new
-  integration. The blueprint ships its own placeholder icons; shipping those
-  unchanged is wrong.
+- **`brand/`** — **ask the user** for the icon and logo images (or a URL to
+  download them from). Do not generate placeholder artwork or reuse the
+  blueprint's assets. The two assets have different aspect ratios:
+  - **`icon.png`** + **`icon@2x.png`** — must be **square** (256×256 and
+    512×512). This is the small symbol shown in device lists and entity
+    cards. Crop or pad the source image to a 1:1 ratio.
+  - **`logo.png`** + **`logo@2x.png`** — must be **rectangular / landscape**
+    (e.g. 256×128 and 512×256). This is the wider mark shown in the
+    integrations page and HACS. Keep the original aspect ratio of the brand
+    wordmark; do not force it into a square.
+  - **`icon.svg`** — vector version of the icon (square).
+  If the user provides a single image, ask whether it should be used as icon,
+  logo, or both (and which crop to apply).
 - **`.idea/`** — either delete the directory entirely (it can be regenerated
   by the IDE) or rename `ha-integration-blueprint.iml` →
   `ha-<new-name>.iml` and update `modules.xml` to match.

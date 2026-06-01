@@ -203,7 +203,9 @@ Sensitive keys go into `TO_REDACT: frozenset[str]`.
 - `hacs.json` at repo root pins minimum HA version.
 - **Brand assets live in `custom_components/<domain>/brand/` inside the
   repo.** Ship `icon.png`, `logo.png` (+ `@2x` variants), and `icon.svg`
-  there. Do **not** rely on the upstream `home-assistant/brands` repo as
-  the source — this skill's integrations bundle their own assets so HACS
-  installs render correctly without an external dependency.
+  there. Do **not** rely on the upstream `home-assistant/brands` repo.
+  - **icon** — always **square** (256×256 / 512×512). Symbol only.
+  - **logo** — always **rectangular / landscape** (e.g. 256×128 / 512×256).
+    Wordmark or full brand mark.
+  - Always ask the user for the source artwork; never generate placeholders.
 - Release-please tags releases on merge to main.
