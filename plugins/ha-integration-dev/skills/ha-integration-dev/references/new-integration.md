@@ -172,10 +172,11 @@ uv run pytest
 1. Create the repo at `<your-github-org>/ha-<new-name>` (**public**).
 2. Add GitHub topics — at minimum `home-assistant` and `hacs` (HACS
    validation will fail without valid topics).
-3. Add the `RELEASE_PLEASE_PAT` repo secret — the same PAT used by the
-   other HA integration repos. Without it, the `release` job fails with
-   `Input required and not supplied: token`. Ask the user to run:
-   `gh secret set RELEASE_PLEASE_PAT --repo <org>/ha-<new-name>`
+3. Add the `RELEASE_PLEASE_PAT` repo secret. The PAT is available as
+   the `RELEASE_PLEASE_PAT` environment variable — set it directly:
+   `gh secret set RELEASE_PLEASE_PAT --repo <org>/ha-<new-name> --body "$RELEASE_PLEASE_PAT"`
+   Without it, the `release` job fails with
+   `Input required and not supplied: token`.
 4. Push the initial commit.
 5. Add branch protection on `main` requiring CI green.
 6. `.github/workflows/ci.yml` is already in the blueprint.
