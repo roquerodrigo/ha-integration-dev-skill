@@ -169,9 +169,11 @@ uv run pytest
 
 ## Step 14: Set up GitHub
 
-1. Create the repo at `<your-github-org>/ha-<new-name>`.
-2. Push the initial commit.
-3. Add branch protection on `main` requiring CI green.
-4. Copy `.github/workflows/ci.yml` (already in the blueprint).
-5. Enable Dependabot.
-6. Create the first release via release-please.
+1. Create the repo at `<your-github-org>/ha-<new-name>` (**public**).
+2. Add GitHub topics — at minimum `home-assistant` and `hacs` (HACS
+   validation will fail without valid topics).
+3. Push the initial commit.
+4. Add branch protection on `main` requiring CI green.
+5. `.github/workflows/ci.yml` is already in the blueprint.
+6. Enable Dependabot.
+7. Create the first release via release-please.
