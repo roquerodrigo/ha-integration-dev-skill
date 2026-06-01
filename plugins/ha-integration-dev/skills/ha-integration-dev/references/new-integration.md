@@ -64,6 +64,22 @@ reset — the global rename in Step 3 will not fix them:
 - **`uv.lock`** — delete it; `uv sync` will regenerate it with the correct
   dependencies after you edit `pyproject.toml`.
 
+Files that **stay** (the blueprint ships them and they must survive the fork —
+don't delete them, but review them against the new integration):
+
+- **`quality_scale.yaml`** — keep it. It declares the integration's position on
+  the HA Quality Scale (the target is **Platinum**), and HA's hassfest validates
+  its schema. Rewrite each rule's `status`/`comment` to match what you actually
+  built: a rule the blueprint marks `done` may be `exempt` for you (e.g.
+  `reauthentication-flow` on an unauthenticated source, `inject-websession` when
+  the SDK owns its own connector) or honestly `todo` (e.g. `stale-devices` if
+  removed devices go unavailable but aren't pruned from the registry). Do **not**
+  leave a rule claiming `done` for behaviour you didn't implement, and do **not**
+  delete the file — a missing `quality_scale.yaml` is a silent quality downgrade.
+- **`CODE_STYLE.md`** — keep it; it's the per-repo source of truth this skill
+  defers to. Update any prose that no longer matches (same rule as CLAUDE.md).
+- **`CONTRIBUTING.md`** — keep it; update repo name / URLs.
+
 ## Step 3: Rename the domain
 
 The blueprint uses `integration_blueprint` as domain and `IntegrationBlueprint`

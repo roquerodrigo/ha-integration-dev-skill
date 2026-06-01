@@ -184,6 +184,16 @@ when flagging a violation. Hard rules first, judgment-calls later.
   the `__init__` and `config_flow` import sites.
 - Async methods mocked with `AsyncMock`.
 
+## Quality scale
+
+- `quality_scale.yaml` exists (the blueprint ships it; a fork that deleted it
+  regressed — flag its absence).
+- Each rule's `status` reflects reality: no rule claims `done` for behaviour
+  the code doesn't implement. `exempt` carries a `comment` justifying why it
+  doesn't apply (unauthenticated source → `reauthentication-flow` exempt; SDK
+  owns its connector → `inject-websession` exempt). A half-done rule is `todo`,
+  not `done`.
+
 ## Manifest & release metadata
 
 - `manifest.json` `version` bumped per SemVer when behaviour changes

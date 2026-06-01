@@ -19,8 +19,8 @@ tests/
 ├── test_switch.py
 ├── test_button.py
 ├── test_diagnostics.py      # redaction, payload shape
-├── test_repairs.py          # issue registry
-└── test_translations.py     # locale key parity
+├── test_repairs.py          # only if repairs.py exists (issue registry)
+└── test_translations.py     # locale key parity + no-empty-values
 ```
 
 ## Coverage gate
@@ -100,14 +100,25 @@ async def setup_integration(hass, mock_api_client, enable_custom_integrations):
 
 ## Translation tests
 
-`test_translations.py` parametrises over every non-default locale file in
-`translations/` and asserts its flattened key set is identical to `en.json`:
+`test_translations.py` parametrises over every locale file in `translations/`
+and asserts its flattened key set is identical to `en.json`:
 
 ```python
 @pytest.mark.parametrize("locale", OTHER_LOCALES)  # discovered from translations/
 def test_translation_keys_match(locale):
     # load en.json and the locale file
     # assert flatten_keys(en) == flatten_keys(locale)
+```
+
+Also assert there are **no empty translation values** across every locale — an
+empty string passes key-parity but renders as a blank label in the UI:
+
+```python
+def test_no_empty_translation_values():
+    for path in translation_files():
+        data = load(path)
+        for key in flatten_keys(data):
+            assert resolve(data, key), f"{path.name}: empty value for {key}"
 ```
 
 ## CI/CD pipeline
