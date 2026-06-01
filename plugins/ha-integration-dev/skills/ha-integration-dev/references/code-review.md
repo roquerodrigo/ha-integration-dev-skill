@@ -21,14 +21,37 @@ when flagging a violation. Hard rules first, judgment-calls later.
   `<purpose>_coordinator.py`, and surface it as a distinct field in
   `runtime_data`.
 
+## API client (`api.py`, `api/`)
+
+- SDK exceptions are mapped to the `<Domain>ApiClientError` hierarchy; no raw
+  SDK exception escapes the wrapper.
+- `async_connect` (or whatever the config flow calls to validate) issues a
+  real round-trip, not just a lazy constructor. Flag a `try/except` wrapping
+  only `SomeClient(url=...)` — lazy clients never raise there, so it's dead
+  code and the flow reports invalid input as valid.
+- SDK data is read through the public API (`obj["field"]`, a property, a
+  method), not private attributes. Flag `obj._private...` with a `# noqa:
+  SLF001` where a documented accessor exists.
+- No dead fields in the payload: every value computed into the coordinator
+  payload / data TypedDict is consumed by an entity, attribute, or diagnostic.
+  Flag a field that is computed and typed but never surfaced.
+
 ## Config flow (`config_flow.py`)
 
 - Steps wired where applicable: `async_step_user`, `async_step_reauth` →
   `async_step_reauth_confirm`, `async_step_reconfigure`, and
-  `async_get_options_flow`.
+  `async_get_options_flow`. **Reauth is not mandatory** — an unauthenticated
+  source (local socket, anonymous HTTP) legitimately omits the reauth steps and
+  the `AuthenticationError` type. Don't flag their absence; do flag reauth
+  scaffolding left in for a source that can't authenticate.
 - `unique_id` set from a stable identifier; aborts on duplicate.
-- `_validate` and `_credentials_schema` are extracted helpers, not inlined
-  per step.
+- Entry **title** is a stable, human-distinguishing value (the host, socket
+  path, account, or device name) — not a hard-coded constant. Two entries of
+  the same integration must be tellable apart in the UI. Flag a fixed string
+  literal as the title when the integration supports multiple entries.
+- `_validate` and the schema-builder helper are extracted, not inlined per
+  step. The builder is often credential-shaped, but may instead build a
+  host/socket field — match the integration's actual input.
 - Every error/abort string resolves through `translations/`, not hardcoded.
 
 ## File organisation
@@ -64,6 +87,11 @@ when flagging a violation. Hard rules first, judgment-calls later.
 - Rarely-useful entities set `_attr_entity_registry_enabled_default = False`.
 - No explicit `_attr_should_poll = False` — already inherited from
   `CoordinatorEntity`.
+- Accessors that read `coordinator.data` narrow it through a local
+  `<Domain>Payload | None` and guard `is None` (it is `None` before the first
+  refresh, despite the non-`Optional` generic). Flag direct
+  `self.coordinator.data["..."]` indexing with no guard, and flag a guard
+  written without the `| None` annotation (strict mypy marks it `unreachable`).
 - Member order inside the class: `_attr_*` constants → `__init__` (if any)
   → `@property`s → HA lifecycle coroutines (`async_added_to_hass`, ...)
   → other public methods → private methods.
@@ -135,7 +163,11 @@ when flagging a violation. Hard rules first, judgment-calls later.
 ## Diagnostics & repairs
 
 - Any new sensitive field added to the payload appears in `TO_REDACT` in
-  `diagnostics.py`.
+  `diagnostics.py`. An **empty `TO_REDACT` is valid** when the entry holds no
+  secrets (e.g. just a socket path) — don't demand redaction of non-secrets.
+- `repairs.py` and `test_repairs.py` exist only if the integration actually
+  registers issues. If it doesn't, both should have been deleted (blueprint
+  sample code) — flag a `repairs.py` that registers nothing.
 - New issues registered via the repairs flow have translated strings under
   `issues.<issue_id>`.
 

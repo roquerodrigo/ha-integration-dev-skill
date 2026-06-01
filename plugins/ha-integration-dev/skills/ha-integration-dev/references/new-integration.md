@@ -31,6 +31,20 @@ reset — the global rename in Step 3 will not fix them:
   blueprint's README describes setup steps, entity tables, and architecture
   specific to the blueprint; none of that applies. At minimum include: what
   the integration does, how to install, and how to configure.
+- **`CLAUDE.md`** — rewrite its prose sections too, not just the README. The
+  blueprint's CLAUDE.md describes a username/password config flow with reauth,
+  an `AuthenticationError`, a `_credentials_schema` builder, and a populated
+  `TO_REDACT`. If your integration's surface differs (e.g. a local socket or
+  any unauthenticated source), those paragraphs become **actively wrong
+  documentation** that sends the next agent looking for steps and helpers that
+  don't exist. Update the config-flow / API-client / diagnostics sections to
+  match what you actually build — the Step 3 rename only swaps identifiers, it
+  does not touch prose describing behaviour you removed.
+- **Unused blueprint subsystems** — the blueprint ships `repairs.py`, reauth
+  steps, and a redaction-driven `diagnostics.py` as samples. Delete the ones
+  your integration doesn't use **and their tests** (e.g. drop `repairs.py` +
+  `test_repairs.py` if you register no issues). Dead sample code inflates the
+  surface, drifts from the docs, and muddies the coverage report.
 - **`brand/`** — **ask the user** for the icon and logo images (or a URL to
   download them from). Do not generate placeholder artwork or reuse the
   blueprint's assets. The two assets have different aspect ratios:
@@ -104,15 +118,40 @@ must:
 1. Map SDK exceptions to the custom exception hierarchy.
 2. Use `hass.async_add_executor_job()` for sync SDKs.
 3. Never expose raw SDK exceptions above the API boundary.
+4. **Make `async_connect` actually prove the connection works.** Many clients
+   are lazy — constructing them (`SomeClient(url=...)`) never touches the
+   network, so a bad host/path/socket only fails on the first real request. If
+   the config flow calls `async_connect()` to validate input, issue a cheap
+   round-trip there (a `version()`/`ping()`/list call) and map its failure to
+   `CommunicationError`. A bare `try/except` around a lazy constructor is dead
+   code and gives false "valid" results. Close the client if the probe fails.
+5. **Read SDK data through its public API, not private attributes.** Reach for
+   the documented accessor (`obj["field"]`, a property, a method) rather than
+   `obj._internal_dict.get(...)`. Private access needs a `# noqa: SLF001`,
+   breaks on SDK upgrades, and is a review finding.
+6. **Don't carry dead data in the payload.** Every field you compute and put in
+   the coordinator payload / `ContainerData` TypedDict should be consumed by an
+   entity, attribute, or diagnostic. A value that is computed, typed, and
+   redacted but never surfaced is dead weight — either expose it (e.g. as an
+   `extra_state_attributes` entry) or stop computing it.
 
 ## Step 8: Define data types
 
-In `data.py`:
-- `<NewDomain>ConfigData(TypedDict)` — credentials from config flow
+In `data.py` (a package — one class per file, see code-review.md):
+- `<NewDomain>ConfigData(TypedDict)` — what the config flow persists
+  (credentials, or just a host/socket path for an unauthenticated source)
 - `<NewDomain>OptionsData(TypedDict, total=False)` — from options flow
 - `<NewDomain>Data(@dataclass)` — runtime data (client, coordinator, integration)
 - `<NewDomain>ConfigEntry = ConfigEntry[<NewDomain>Data]`
 - Payload TypedDict(s) for coordinator return type
+
+**Narrowing `coordinator.data`:** the generic types `coordinator.data` as the
+payload type (non-`Optional`), but it is `None` until the first successful
+refresh. In the base entity's `available` / accessor properties, assign it to a
+local annotated `<NewDomain>Payload | None` and guard `is None` before indexing.
+Without the annotation, `strict` mypy flags the `is None` branch as
+`unreachable`; with it, the guard type-checks and entities don't crash on the
+pre-refresh tick.
 
 ## Step 9: Implement the coordinator
 
@@ -177,6 +216,17 @@ uv run pytest
    `gh secret set RELEASE_PLEASE_PAT --repo <org>/ha-<new-name> --body "$RELEASE_PLEASE_PAT"`
    Without it, the `release` job fails with
    `Input required and not supplied: token`.
+   - **Verify the value landed non-empty.** `gh secret set` happily accepts an
+     empty string and reports success, so a mistake produces a green
+     "secret set" but the job still fails with the same `token` error. If you
+     read the PAT from a `.env`, **grep the single line** (`grep
+     '^RELEASE_PLEASE_PAT=' .env | cut -d= -f2-`) rather than sourcing the
+     whole file — a `. .env` aborts on the first line containing an
+     unquoted `&`/special char and silently sets the var to empty. Confirm
+     with `gh secret list` (timestamp updated) and re-run the release job.
+   - The reusable `ha-release.yml` reads `secrets.RELEASE_PLEASE_PAT` with **no
+     `GITHUB_TOKEN` fallback** (the default token can't trigger downstream
+     workflows), so the PAT is mandatory, not optional.
 4. Push the initial commit.
 5. Add branch protection on `main` requiring CI green.
 6. `.github/workflows/ci.yml` is already in the blueprint.
