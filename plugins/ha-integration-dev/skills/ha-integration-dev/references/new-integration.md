@@ -19,7 +19,29 @@ rm -rf .git
 git init
 ```
 
-## Step 2: Rename the domain
+## Step 2: Clean blueprint artifacts
+
+These files carry state from the blueprint's release history and must be
+reset — the global rename in Step 3 will not fix them:
+
+- **`.release-please-manifest.json`** — set version to `"0.0.0"`.
+- **`CHANGELOG.md`** — empty the file (keep only the `# Changelog` heading).
+  The first release-please PR will populate it.
+- **`README.md`** — rewrite from scratch for the new integration. The
+  blueprint's README describes setup steps, entity tables, and architecture
+  specific to the blueprint; none of that applies. At minimum include: what
+  the integration does, how to install, and how to configure.
+- **`brand/`** — replace **all** image assets (`icon.png`, `icon@2x.png`,
+  `logo.png`, `logo@2x.png`, `icon.svg`) with artwork for the new
+  integration. The blueprint ships its own placeholder icons; shipping those
+  unchanged is wrong.
+- **`.idea/`** — either delete the directory entirely (it can be regenerated
+  by the IDE) or rename `ha-integration-blueprint.iml` →
+  `ha-<new-name>.iml` and update `modules.xml` to match.
+- **`uv.lock`** — delete it; `uv sync` will regenerate it with the correct
+  dependencies after you edit `pyproject.toml`.
+
+## Step 3: Rename the domain
 
 The blueprint uses `integration_blueprint` as domain and `IntegrationBlueprint`
 as the class prefix. Replace globally:
@@ -32,7 +54,7 @@ as the class prefix. Replace globally:
    - `Integration Blueprint` → `<New Name>`
    - `ha-integration-blueprint` → `ha-<new-name>`
 
-## Step 3: Update manifest.json
+## Step 4: Update manifest.json
 
 ```json
 {
@@ -48,7 +70,7 @@ as the class prefix. Replace globally:
 }
 ```
 
-## Step 4: Update hacs.json
+## Step 5: Update hacs.json
 
 ```json
 {
@@ -58,14 +80,14 @@ as the class prefix. Replace globally:
 }
 ```
 
-## Step 5: Update pyproject.toml
+## Step 6: Update pyproject.toml
 
-- Change `name`, `version`, `description`.
+- Change `name`, `version` (to `"0.1.0"`), `description`.
 - Add the SDK to dev dependencies.
 - Update `--cov=custom_components/<new_domain>` in pytest addopts.
 - Update `files = ["custom_components/<new_domain>"]` in the mypy section.
 
-## Step 6: Implement the API client
+## Step 7: Implement the API client
 
 Replace the sample `api.py` with a wrapper around the real SDK. The wrapper
 must:
@@ -74,7 +96,7 @@ must:
 2. Use `hass.async_add_executor_job()` for sync SDKs.
 3. Never expose raw SDK exceptions above the API boundary.
 
-## Step 7: Define data types
+## Step 8: Define data types
 
 In `data.py`:
 - `<NewDomain>ConfigData(TypedDict)` — credentials from config flow
@@ -83,7 +105,7 @@ In `data.py`:
 - `<NewDomain>ConfigEntry = ConfigEntry[<NewDomain>Data]`
 - Payload TypedDict(s) for coordinator return type
 
-## Step 8: Implement the coordinator
+## Step 9: Implement the coordinator
 
 In `coordinator.py`:
 - Set the return type: `DataUpdateCoordinator[PayloadType]`
@@ -91,7 +113,7 @@ In `coordinator.py`:
 - Map auth errors → `ConfigEntryAuthFailed`
 - Map comms errors → `UpdateFailed`
 
-## Step 9: Add entity platforms
+## Step 10: Add entity platforms
 
 For each platform:
 1. Create entity class(es) — one class per entity.
@@ -99,7 +121,7 @@ For each platform:
 3. Add the platform to `PLATFORMS` in `__init__.py`.
 4. Add translations for entity names and enum states.
 
-## Step 10: Add translations
+## Step 11: Add translations
 
 Update every supported locale file under `translations/` with:
 - Config flow step titles, descriptions, data labels
@@ -109,7 +131,7 @@ Update every supported locale file under `translations/` with:
 At minimum ship `en.json`; add other locales as needed. Whatever set you ship,
 `test_translations.py` should enforce key parity across all of them.
 
-## Step 11: Write tests (same pass as Steps 6–10)
+## Step 12: Write tests (same pass as Steps 7–11)
 
 Tests are not a separate step — write them alongside each module as you
 implement it. By the time you reach this checklist item, every `.py` file
@@ -125,7 +147,7 @@ Mirror the production layout in `tests/`. Target 90% coverage. At minimum:
 - `test_translations.py` — locale key parity
 - `test_diagnostics.py` — redaction
 
-## Step 12: Verify
+## Step 13: Verify
 
 Run the tools directly (no `scripts/lint` wrapper):
 
@@ -136,7 +158,7 @@ uv run mypy custom_components/<new_domain>
 uv run pytest
 ```
 
-## Step 13: Set up GitHub
+## Step 14: Set up GitHub
 
 1. Create the repo at `<your-github-org>/ha-<new-name>`.
 2. Push the initial commit.
