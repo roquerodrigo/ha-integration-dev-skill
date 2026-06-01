@@ -109,7 +109,12 @@ Update every supported locale file under `translations/` with:
 At minimum ship `en.json`; add other locales as needed. Whatever set you ship,
 `test_translations.py` should enforce key parity across all of them.
 
-## Step 11: Write tests
+## Step 11: Write tests (same pass as Steps 6–10)
+
+Tests are not a separate step — write them alongside each module as you
+implement it. By the time you reach this checklist item, every `.py` file
+under `custom_components/<new_domain>/` should already have its test
+counterpart. This step is a verification that nothing was missed.
 
 Mirror the production layout in `tests/`. Target 90% coverage. At minimum:
 - `test_init.py` — setup, unload, reload

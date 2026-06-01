@@ -45,6 +45,13 @@ Skip this skill when working on:
 - **TypeScript / non-Python repos.** This skill's conventions and gates are
   Python-only.
 
+## Tests ship with code
+
+Production code and its tests are a single deliverable — never commit or declare
+done without both. When adding a feature, fixing a bug, or scaffolding a new
+integration, write the corresponding tests in the same pass. "Write tests later"
+is not acceptable; the verification workflow below will fail without them.
+
 ## Verification workflow
 
 After every code change, run lint then tests before declaring done. Run the
