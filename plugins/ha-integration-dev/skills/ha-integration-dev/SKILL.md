@@ -9,8 +9,14 @@ description: >-
   add tests, review code, scaffold a new integration from a blueprint, bump
   dependencies, or apply any code change in such a repo. Also use when the user
   mentions HACS, config flow, coordinator, reauth, translations, quality scale,
-  or any Home Assistant integration development concept.
-version: 1.0.0
+  or any Home Assistant integration development concept. It also covers building
+  a Home Assistant **Lovelace custom card** — a zero-build frontend web component
+  shipped as a HACS plugin/dashboard resource (the card `.js` lives at the repo
+  root with a `hacs.json`, not in `custom_components/`). Use it too when the user
+  asks to create or change a custom card, its `ha-form` visual editor,
+  `window.customCards` registration, card i18n, or the card's HACS/CI/release
+  flow.
+version: 1.1.0
 ---
 
 # Home Assistant Integration Development
@@ -33,8 +39,10 @@ Skip this skill when working on:
   existing style instead.
 - **Generic Python projects** that happen to use words like "coordinator" or
   "config flow" outside the HA context.
-- **HA YAML configuration / automations / dashboards.** This skill is for
-  Python code in `custom_components/`, not user-side YAML.
+- **HA YAML configuration, automations, and user-side dashboards.** Editing a
+  user's dashboard/automation YAML is out of scope. Building a distributable
+  Lovelace **custom card**, however, *is* in scope — see
+  [Lovelace custom cards](#lovelace-custom-cards).
 - **Standalone SDKs / API clients with no HA integration consuming them.** The
   companion-SDK case applies only when a `custom_components/<domain>/`
   integration actually imports the package. A device/cloud API client that no
@@ -42,8 +50,11 @@ Skip this skill when working on:
 - **MCP servers and other generic API wrappers.** Talking to a device or cloud
   API does not by itself bring a repo into scope; without an HA integration
   consumer, skip the skill.
-- **TypeScript / non-Python repos.** This skill's conventions and gates are
-  Python-only.
+- **TypeScript / non-Python repos** — *except* a Lovelace **custom card** (a JS
+  frontend plugin), which this skill covers via
+  `references/lovelace-cards.md`. The Python-only conventions and gates below
+  (`ruff`/`mypy`/`pytest`, "tests ship with code") apply to integrations and
+  SDKs, **not** to cards; cards have their own verification in that reference.
 
 ## Tests ship with code
 
@@ -73,6 +84,9 @@ pytest
   (`ruff format --check`, `ruff check` without `--fix`) so you never modify the
   tree just to pass the gate.
 - Both gates should mirror CI. Skip only for README-only edits.
+- **Lovelace custom cards have no Python gate.** They are frontend JS — verify
+  them with the card-specific steps in `references/lovelace-cards.md`
+  (`node --check`, resource-served check, browser check), not `ruff`/`pytest`.
 
 ## Always read the repo's style guide first
 
@@ -111,3 +125,13 @@ reviewing a PR against a repo that follows these conventions.
 
 Read `references/new-integration.md` for the step-by-step checklist to fork a
 blueprint into a new integration.
+
+## Lovelace custom cards
+
+Read `references/lovelace-cards.md` when the deliverable is a **frontend custom
+card** rather than a Python integration — a zero-build web component shipped as
+a HACS plugin/dashboard resource. It covers card-vs-integration, repo layout,
+the web-component contract (`setConfig`/`set hass`/`getConfigElement`/
+`customCards`), the `ha-form` visual editor, internationalization, manual vs.
+HACS install, and the CI/release flow. The Python conventions, testing, and
+quality-scale sections above do **not** apply to cards.
