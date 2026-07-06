@@ -1,9 +1,9 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "ha-integration-dev",
-  "version": "1.0.0",
-  "description": "Conventions, patterns, and code review for Home Assistant custom integrations and their Python SDKs.",
+  "version": "1.1.0",
+  "description": "Conventions, patterns, and code review for Home Assistant custom integrations, their Python SDKs, and Lovelace custom cards.",
   "license": "MIT",
-  "keywords": ["home-assistant", "hacs", "integration", "python", "sdk"],
+  "keywords": ["home-assistant", "hacs", "integration", "python", "sdk", "lovelace", "custom-card"],
   "skills": "./skills/"
 }
