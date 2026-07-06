@@ -2,8 +2,7 @@
 
 A Claude Code plugin that teaches Claude the conventions, architecture, and
 testing patterns for building **Home Assistant custom integrations** and their
-companion Python SDKs — and the full flow for **Lovelace custom cards**
-(frontend plugins).
+companion Python SDKs.
 
 The patterns target **Platinum** on the HA Integration Quality Scale and
 assume a shared blueprint (e.g. `ha-integration-blueprint`) as the starting
@@ -12,8 +11,8 @@ point for each new integration.
 ## What's inside
 
 A single skill — `ha-integration-dev` — that auto-loads when Claude Code is
-working in a repo containing `custom_components/<domain>/`, a related Python
-SDK, or a Lovelace custom card. The skill bundles:
+working in a repo containing `custom_components/<domain>/` or in a related
+Python SDK. The skill bundles:
 
 - **Architecture** — file layout, runtime data, coordinator, config/options
   flow, entity design, exception hierarchy, translations, diagnostics, HACS.
@@ -24,10 +23,6 @@ SDK, or a Lovelace custom card. The skill bundles:
 - **Code review checklist** — per-area checklist for PR review.
 - **New integration scaffolding** — step-by-step checklist to fork a
   blueprint into a fresh integration.
-- **Lovelace custom cards** — the full frontend-card flow: card-vs-integration,
-  repo layout, the web-component contract, the `ha-form` visual editor,
-  internationalization, manual vs. HACS install, and CI/release. (Not Python —
-  cards have their own verification.)
 
 Reference files are loaded on demand by Claude — only what's relevant to the
 current task ends up in context.
@@ -49,11 +44,8 @@ loads automatically when its triggers match.
 - Repos containing `custom_components/<domain>/`
 - Companion Python SDKs that wrap a device or cloud API for such an
   integration
-- Lovelace **custom card** repos (a card `.js` at the root with a `hacs.json`,
-  no `custom_components/`)
 - Conversations mentioning: HACS, config flow, coordinator, reauth,
-  translations, quality scale, custom card, `ha-form` editor, `customCards`, or
-  other HA integration / frontend-card concepts
+  translations, quality scale, or other HA integration concepts
 
 ## When it does NOT trigger
 
@@ -61,8 +53,7 @@ The skill explicitly steps aside for:
 
 - Home Assistant core development (`home-assistant/core`)
 - Third-party integrations that visibly do not follow the blueprint layout
-- HA YAML configuration, automations, and user-side dashboards (editing a
-  user's YAML — as opposed to building a distributable custom card)
+- HA YAML configuration, automations, and dashboards (user-side, not Python)
 
 ## Layout
 
@@ -77,8 +68,7 @@ plugins/ha-integration-dev/
         ├── coding-conventions.md
         ├── testing.md
         ├── code-review.md
-        ├── new-integration.md
-        └── lovelace-cards.md
+        └── new-integration.md
 ```
 
 ## License
