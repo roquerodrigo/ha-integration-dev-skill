@@ -58,7 +58,11 @@ when flagging a violation. Hard rules first, judgment-calls later.
 
 - One class per file — no exceptions. TypedDicts and dataclasses each get
   their own file under `data/` (a package). `type` aliases live in
-  `data/__init__.py`. Flag any module with two or more top-level classes.
+  `data/__init__.py`. Flag any module with two or more top-level classes —
+  including a flat `data.py` stacking several TypedDicts/dataclasses, **even
+  when the repo's own docs still show the flat form**: this is a blueprint
+  invariant, not a style preference (report it as migration debt, not a
+  blocker, when the PR doesn't touch `data.py`).
 - A platform with multiple entities is a package
   (`sensor/__init__.py` + `sensor/<entity>.py`), not a single
   `sensor.py` stacking the classes.

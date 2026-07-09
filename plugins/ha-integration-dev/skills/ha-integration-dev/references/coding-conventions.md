@@ -44,6 +44,10 @@ See `architecture.md` for the full layout. The three load-bearing rules:
   re-exporting public symbols). `type` aliases live in `data/__init__.py`.
   Helper functions may live alongside the single class that uses them
   (e.g. `_verify_response` next to the API client in `api.py`).
+  Like the `unique_id` invariant below, this is a **hard blueprint
+  invariant**: a legacy flat multi-class `data.py` is migration debt — migrate
+  it when you touch that area, even if the repo's `CODE_STYLE.md` predates the
+  rule.
 - **One entity per class.** Never share a generic class parametrised by an
   `EntityDescription` subclass with callable fields like `value_fn` or
   `action_fn`. Encode behaviour directly via `@property` and class-level

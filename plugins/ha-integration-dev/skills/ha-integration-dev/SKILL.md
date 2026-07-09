@@ -16,7 +16,7 @@ description: >-
   asks to create or change a custom card, its `ha-form` visual editor,
   `window.customCards` registration, card i18n, or the card's HACS/CI/release
   flow.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # Home Assistant Integration Development
@@ -28,33 +28,24 @@ each new integration.
 
 ## When NOT to use
 
-Skip this skill when working on:
+Skip this skill for:
 
-- **Home Assistant core integrations** (the `home-assistant/core` repo).
-  Core has its own conventions, review process, and constraints — applying
-  this skill there will fight the upstream style.
-- **Third-party custom integrations** authored by someone else that visibly
-  do not follow the blueprint layout (no `runtime_data`, no
-  `DataUpdateCoordinator` typing, no `CODE_STYLE.md`). Match the host repo's
-  existing style instead.
-- **Generic Python projects** that happen to use words like "coordinator" or
-  "config flow" outside the HA context.
-- **HA YAML configuration, automations, and user-side dashboards.** Editing a
-  user's dashboard/automation YAML is out of scope. Building a distributable
-  Lovelace **custom card**, however, *is* in scope — see
+- **`home-assistant/core` integrations** — core has its own conventions and
+  review process; this skill will fight the upstream style.
+- **Someone else's custom integration that doesn't follow the blueprint**
+  (no `runtime_data`, no typed coordinator, no `CODE_STYLE.md`) — match the
+  host repo's existing style instead.
+- **Repos with no HA integration in the loop** — generic Python projects that
+  merely use words like "coordinator", standalone SDKs/API clients that no
+  `custom_components/<domain>/` integration imports, MCP servers and other
+  API wrappers. Talking to a device API does not by itself bring a repo into
+  scope.
+- **User-side YAML** (automations, dashboards, configuration.yaml). Building a
+  distributable Lovelace **custom card**, however, *is* in scope — see
   [Lovelace custom cards](#lovelace-custom-cards).
-- **Standalone SDKs / API clients with no HA integration consuming them.** The
-  companion-SDK case applies only when a `custom_components/<domain>/`
-  integration actually imports the package. A device/cloud API client that no
-  HA integration depends on is out of scope — match its own house style.
-- **MCP servers and other generic API wrappers.** Talking to a device or cloud
-  API does not by itself bring a repo into scope; without an HA integration
-  consumer, skip the skill.
-- **TypeScript / non-Python repos** — *except* a Lovelace **custom card** (a JS
-  frontend plugin), which this skill covers via
-  `references/lovelace-cards.md`. The Python-only conventions and gates below
-  (`ruff`/`mypy`/`pytest`, "tests ship with code") apply to integrations and
-  SDKs, **not** to cards; cards have their own verification in that reference.
+- **Other TypeScript / non-Python repos.** The Python gates below apply to
+  integrations and SDKs, not to cards; cards have their own verification in
+  `references/lovelace-cards.md`.
 
 ## Tests ship with code
 
@@ -98,6 +89,23 @@ language or payload typing). This skill summarises cross-integration patterns;
 per-repo specifics live in that guide. Before trusting a stale-looking claim in
 it (a referenced config file, a coverage percentage), cross-check against the
 repo's actual `pyproject.toml` / CI and flag the drift.
+
+When the repo's guide is complete (the blueprint's `CODE_STYLE.md` +
+`CLAUDE.md` already cover typing, layout, entity rules, and the verification
+workflow), work from it directly and open this skill's references only for
+what the guide does **not** cover — scaffolding a new repo, release wiring,
+the review checklist, card development. Re-reading references that restate
+the repo guide costs context and adds nothing.
+
+## When you cannot ask the user
+
+Some steps genuinely need user input (brand artwork, credentials, naming
+choices). In an autonomous run where asking is impossible, never silently
+substitute an invention — make the gap impossible to miss instead: record a
+tracked TODO in the deliverable itself (README or issue), state it prominently
+in your final report, and treat it as a release blocker. For example,
+blueprint brand placeholders may stay as a stopgap so validation passes, but a
+release that ships another project's artwork is a bug, not a shortcut.
 
 ---
 

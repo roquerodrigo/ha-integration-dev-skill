@@ -57,7 +57,10 @@ reset — the global rename in Step 3 will not fix them:
     wordmark; do not force it into a square.
   - **`icon.svg`** — vector version of the icon (square).
   If the user provides a single image, ask whether it should be used as icon,
-  logo, or both (and which crop to apply).
+  logo, or both (and which crop to apply). If you **cannot** ask (autonomous
+  run), keep the blueprint placeholders only as a stopgap so validation
+  passes, add a tracked TODO to the README, and flag it prominently in your
+  final report — never cut a release that still ships the blueprint's artwork.
 - **`.idea/`** — either delete the directory entirely (it can be regenerated
   by the IDE) or rename `ha-integration-blueprint.iml` →
   `ha-<new-name>.iml` and update `modules.xml` to match.
@@ -227,22 +230,15 @@ uv run pytest
 1. Create the repo at `<your-github-org>/ha-<new-name>` (**public**).
 2. Add GitHub topics — at minimum `home-assistant` and `hacs` (HACS
    validation will fail without valid topics).
-3. Add the `RELEASE_PLEASE_PAT` repo secret. The PAT is available as
-   the `RELEASE_PLEASE_PAT` environment variable — set it directly:
+3. Add the `RELEASE_PLEASE_PAT` repo secret — the reusable `ha-release.yml`
+   reads it with **no `GITHUB_TOKEN` fallback**, so without it the release job
+   fails with `Input required and not supplied: token`:
    `gh secret set RELEASE_PLEASE_PAT --repo <org>/ha-<new-name> --body "$RELEASE_PLEASE_PAT"`
-   Without it, the `release` job fails with
-   `Input required and not supplied: token`.
-   - **Verify the value landed non-empty.** `gh secret set` happily accepts an
-     empty string and reports success, so a mistake produces a green
-     "secret set" but the job still fails with the same `token` error. If you
-     read the PAT from a `.env`, **grep the single line** (`grep
-     '^RELEASE_PLEASE_PAT=' .env | cut -d= -f2-`) rather than sourcing the
-     whole file — a `. .env` aborts on the first line containing an
-     unquoted `&`/special char and silently sets the var to empty. Confirm
-     with `gh secret list` (timestamp updated) and re-run the release job.
-   - The reusable `ha-release.yml` reads `secrets.RELEASE_PLEASE_PAT` with **no
-     `GITHUB_TOKEN` fallback** (the default token can't trigger downstream
-     workflows), so the PAT is mandatory, not optional.
+   Verify the value landed **non-empty**: `gh secret set` accepts an empty
+   string and still reports success. If reading the PAT from a `.env`, grep
+   the single line (`grep '^RELEASE_PLEASE_PAT=' .env | cut -d= -f2-`) instead
+   of sourcing the whole file (a `. .env` can silently set the var empty),
+   then confirm with `gh secret list`.
 4. Push the initial commit.
 5. Add branch protection on `main` requiring CI green.
 6. `.github/workflows/ci.yml` is already in the blueprint.

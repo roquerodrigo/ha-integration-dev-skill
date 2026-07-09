@@ -79,6 +79,11 @@ dataclasses, which each get their own file under `data/` (a package with an
 alongside the single class that uses them (e.g. `_verify_response_or_raise`
 in `api.py`).
 
+This is a **hard blueprint invariant**, like `unique_id`-as-property: a legacy
+repo carrying a flat multi-class `data.py` is drift to migrate when you touch
+that area — not a repo-style override, even if the repo's own `CODE_STYLE.md`
+predates the rule.
+
 ## Runtime data
 
 All integration state lives on `entry.runtime_data: <Domain>Data`, a
@@ -150,17 +155,14 @@ One class per file (`options_flow.py`). Changes trigger
 ## Entity design
 
 **One class per entity.** Never share a generic class parameterised by an
-`EntityDescription` subclass with callable fields like `value_fn` or
-`action_fn`. Encode behaviour directly via `@property` and class-level
-`_attr_*` constants.
+`EntityDescription` subclass with `value_fn`-style callables. Naming:
+`<Domain><Name><Platform>` — e.g. `<Domain>TemperatureSensor`,
+`<Domain>DoorBinarySensor`.
 
-Naming: `<Domain><Name><Platform>` — e.g. `<Domain>TemperatureSensor`,
-`<Domain>DoorBinarySensor`, `<Domain>BatterySensor`.
-
-Base entity always sets:
-- `_attr_attribution = ATTRIBUTION`
-- `_attr_has_entity_name = True`
-- `device_info` as a `@property`
+Base entity always sets `_attr_attribution = ATTRIBUTION`,
+`_attr_has_entity_name = True`, and `device_info` as a `@property`. Member
+order, property-vs-`__init__`, the `unique_id` invariant, and entity
+categories are defined in [coding-conventions.md](./coding-conventions.md).
 
 ## Exception hierarchy
 
@@ -208,4 +210,7 @@ Sensitive keys go into `TO_REDACT: frozenset[str]`.
   - **logo** — always **rectangular / landscape** (e.g. 256×128 / 512×256).
     Wordmark or full brand mark.
   - Always ask the user for the source artwork; never generate placeholders.
+    If asking is impossible, follow the autonomous fallback in
+    [new-integration.md](./new-integration.md) — tracked TODO, prominent flag,
+    release blocker.
 - Release-please tags releases on merge to main.
