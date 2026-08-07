@@ -223,9 +223,12 @@ Use scopes when useful: `fix(sensor): handle None battery value`.
 
 ## pyproject.toml standard
 
-This is the **shape** to copy. Pin exactly and bump via Dependabot / Renovate
-— do not copy the literal version strings below, set them to whatever is
-current when you scaffold.
+This is the **shape** to copy. Pin dev/lint dependencies exactly and bump via
+Dependabot / Renovate — do not copy the literal version strings below, set
+them to whatever is current when you scaffold. The exact-pin rule applies to
+**development groups and integration repos only**: an SDK's runtime
+dependencies (`[project] dependencies`) must use `>=` floors instead — see
+`sdk.md` for why `==` there breaks installs inside Home Assistant.
 
 ```toml
 [project]
