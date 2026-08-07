@@ -132,7 +132,23 @@ reviewing a PR against a repo that follows these conventions.
 ## Creating a new integration
 
 Read `references/new-integration.md` for the step-by-step checklist to fork a
-blueprint into a new integration.
+blueprint into a new integration (including the private-repository variant).
+
+## Companion SDKs
+
+Read `references/sdk.md` when the repo is (or the task touches) a companion
+Python SDK consumed by an integration: repo layout (`src/` + hatchling +
+`py.typed`), the dependency policy (**never** pin runtime dependencies with
+`==` — Home Assistant's own constraints conflict), the PyPI release flow, the
+SDK-fix → integration-bump sequence, the manifest×dev-pin parity test, and
+local wheel validation before a release.
+
+## Maintenance and closing flow
+
+Read `references/maintenance.md` for what happens after lint and tests pass:
+the branch-protection/PR/rebase-merge closing flow, validating on a live Home
+Assistant instance, and the paired `homeassistant` +
+`pytest-homeassistant-custom-component` dependency bump.
 
 ## Lovelace custom cards
 

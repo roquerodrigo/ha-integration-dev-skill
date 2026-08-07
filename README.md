@@ -23,7 +23,12 @@ SDK, or a Lovelace custom card. The skill bundles:
   mocking strategy, translation parity tests, CI/CD jobs.
 - **Code review checklist** — per-area checklist for PR review.
 - **New integration scaffolding** — step-by-step checklist to fork a
-  blueprint into a fresh integration.
+  blueprint into a fresh integration, public or private.
+- **Companion SDKs** — `src/` layout, the runtime-dependency policy
+  (`>=` floors, never `==`), PyPI release flow, and the manifest×pin
+  parity rule.
+- **Maintenance** — dependency upkeep (paired Home Assistant bumps),
+  validating on a live instance, and the PR/rebase-merge closing flow.
 - **Lovelace custom cards** — the full frontend-card flow: card-vs-integration,
   repo layout, the web-component contract, the `ha-form` visual editor,
   internationalization, manual vs. HACS install, and CI/release. (Not Python —
@@ -78,6 +83,8 @@ plugins/ha-integration-dev/
         ├── testing.md
         ├── code-review.md
         ├── new-integration.md
+        ├── sdk.md
+        ├── maintenance.md
         └── lovelace-cards.md
 ```
 
