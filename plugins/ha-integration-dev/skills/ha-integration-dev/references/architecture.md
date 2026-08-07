@@ -12,10 +12,10 @@ custom_components/<domain>/
 ├── data/                    # required — one TypedDict/dataclass per file, type aliases in __init__.py
 │   ├── __init__.py          #   re-exports + type aliases (ConfigEntry, JsonPrimitive, etc.)
 │   └── <type_name>.py       #   one file per TypedDict or dataclass
-├── entity.py                # required — base entity (CoordinatorEntity subclass)
-├── coordinator.py           # required — DataUpdateCoordinator[PayloadType]
+├── entity.py                # required — base entity (CoordinatorEntity subclass when polling)
+├── coordinator.py           # standard for polling — DataUpdateCoordinator[PayloadType]
 ├── <purpose>_coordinator.py # *conditional — when polling cadences differ (e.g. map_coordinator.py)
-├── api.py                   # required — SDK wrapper / HTTP client
+├── api.py                   # standard for polling — SDK wrapper / HTTP client
 │                            #   OR api/ package (client.py + errors.py + responses.py + ...)
 ├── <subsystem>/             # *conditional — auxiliary SDK-like subpackages
 │                            #   (e.g. cloud/, bluetooth/) with own client + errors + types
@@ -108,6 +108,12 @@ class <Domain>Data:
 - `_async_update_data()` returns the typed payload.
 - Use `await coordinator.async_config_entry_first_refresh()` during setup
   (not `async_refresh()`). A failed first refresh raises `ConfigEntryNotReady`.
+  **Local-push variant:** when the transport is slow or intermittent by nature
+  (e.g. passive BLE through proxies) and the integration has a documented
+  degradation strategy, a non-blocking
+  `entry.async_create_task(hass, coordinator.async_refresh())` is the accepted
+  alternative — blocking setup on a device that is legitimately out of reach
+  would keep the entry from ever loading.
 - Pass `always_update=False` when the payload compares cleanly with `__eq__`.
 - Error mapping inside `_async_update_data`:
   - Authentication errors → `raise ConfigEntryAuthFailed(...)` (starts reauth)
@@ -132,6 +138,35 @@ heavy fetch like a cleaning map). Each one:
 
 Do not split coordinators by entity or by platform — split only when the
 underlying data has a different freshness need.
+
+## Push and local-transport variants
+
+The coordinator/api/entity trio above is the **standard shape for polling
+integrations** — it is not mandatory when data arrives by push or the device
+cannot report state at all. Three recurring variants, all legitimate:
+
+- **Passive BLE (advertisement-driven).** State arrives through HA's
+  Bluetooth advertisement feed (possibly relayed by ESPHome/Shelly proxies),
+  not through requests the integration initiates. Connections are slow and
+  intermittent, so a blocking first refresh is wrong here — see the
+  local-push note under "Coordinator" and document the degradation strategy
+  (last-known state, availability windows).
+- **MQTT / cloud push with a supervisor.** A long-lived listener task
+  receives events and pushes them into entities. Run it via
+  `entry.async_create_background_task(hass, coro, name)` — never a bare
+  `asyncio.create_task` — so HA cancels it on unload and it doesn't block
+  startup. Pair it with an explicit reconnect/backoff supervisor and a
+  documented behaviour for the connection-lost window.
+- **Assumed state (one-way transports such as IR).** The device cannot
+  report state; entities set `_attr_assumed_state = True` and keep an
+  optimistic local state updated on each command sent. There may be no
+  coordinator and no API client at all — a thin encoder plus the transport
+  service is the whole integration. Since the entity state is mutable and
+  locally owned, mutable `_attr_*` assigned in `__init__` is the accepted
+  form here (see coding-conventions.md).
+
+What stays mandatory in every variant: config flow, typed payloads,
+`entry.runtime_data`, translations, and the error-mapping boundary.
 
 ## Config flow
 
