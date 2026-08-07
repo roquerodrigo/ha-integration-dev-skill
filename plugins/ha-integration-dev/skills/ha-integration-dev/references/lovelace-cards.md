@@ -257,28 +257,31 @@ at once, or the second `customElements.define("my-card", …)` throws
 
 ## CI / release
 
-`.github/workflows/ci.yml` runs HACS validation then release-please:
+CI reuses the shared workflows in `roquerodrigo/workflows` (same as the
+integration repos), plus a syntax check on the card itself:
 
 ```yaml
+# .github/workflows/ci.yml
 jobs:
-  validate:
+  syntax:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: hacs/action@main
-        with:
-          category: plugin
-  release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [validate]
-    permissions: { contents: write, pull-requests: write }
-    runs-on: ubuntu-latest
-    steps:
-      - uses: googleapis/release-please-action@v4
-        with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+      - run: node --check <card-name>.js
+
+  validate:
+    uses: roquerodrigo/workflows/.github/workflows/home-assistant-validate.yml@main
+    with:
+      hassfest: false        # a card has no manifest.json
+      version-check: false   # nothing to compare against pyproject.toml
+      hacs-category: plugin
 ```
+
+The release lives in its own `release.yml`, gated on a successful CI run
+(`workflow_run` on CI completion, `push` event only) and calling
+`roquerodrigo/workflows/.github/workflows/release-please.yml@main` with
+`release-token: ${{ secrets.RELEASE_PLEASE_PAT }}` — the same shape the
+integration repos use (see `testing.md`, "CI/CD pipeline").
 
 HACS `plugin` validation runs these checks: `license`, `information`, `topics`,
 `archived`, `description`, `issues`, `hacsjson`, `images`. To go green:
@@ -294,7 +297,9 @@ HACS `plugin` validation runs these checks: `license`, `information`, `topics`,
   it once —
   `gh api --method PUT repos/<owner>/ha-<card-name>/actions/permissions/workflow -F default_workflow_permissions=write -F can_approve_pull_request_reviews=true`
   — or supply a PAT. Without it the release job fails with *"GitHub Actions is
-  not permitted to create or approve pull requests."*
+  not permitted to create or approve pull requests."* Prefer the
+  `RELEASE_PLEASE_PAT` secret anyway: release PRs opened with the default
+  `GITHUB_TOKEN` trigger no workflows and sit with stale checks.
 
 Repo setup: **public**, topics added, description set, issues enabled.
 
