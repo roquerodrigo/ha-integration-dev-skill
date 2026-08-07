@@ -98,6 +98,22 @@ async def setup_integration(hass, mock_api_client, enable_custom_integrations):
   `make_node()`) when the SDK exposes dataclasses.
 - Never call real network APIs in tests.
 
+## Fixtures never contain real secrets
+
+Fixtures, captures, and sample payloads use **synthetic values only** — never
+real device credentials, cryptographic keys, unlock codes, tokens, MAC
+addresses, or account/device nicknames. These repos are public and published
+(GitHub, PyPI): a real key in a fixture is a credential leak, and the only
+remediation is rotating the credential on the physical device — long after
+every mirror has a copy.
+
+- Build fixtures with realistic **shapes** and obviously fake values.
+- When a real protocol capture seeds a fixture (golden tests), re-key and
+  redact it before committing, and verify the parser still round-trips the
+  sanitised bytes.
+- If a real credential was ever committed, rotating it is part of the fix —
+  rewriting git history alone does not un-leak it.
+
 ## Translation tests
 
 `test_translations.py` parametrises over every locale file in `translations/`
