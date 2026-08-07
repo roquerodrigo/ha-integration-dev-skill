@@ -144,7 +144,8 @@ doesn't waste downstream minutes.
 # first time setup
 uv sync --group dev --group lint
 
-# verify — run the tools directly (no scripts/lint wrapper)
+# verify — scripts/lint is a thin wrapper that only chains these commands;
+# use it when the repo ships one, or run them directly:
 uv run ruff format --check .
 uv run ruff check .
 uv run mypy custom_components/<domain>   # or src/ for an SDK

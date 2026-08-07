@@ -216,7 +216,7 @@ Mirror the production layout in `tests/`. Target 90% coverage. At minimum:
 
 ## Step 13: Verify
 
-Run the tools directly (no `scripts/lint` wrapper):
+Run the repo's thin `scripts/lint` wrapper, or the same commands directly:
 
 ```bash
 uv run ruff format --check .

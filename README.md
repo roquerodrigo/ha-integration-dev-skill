@@ -5,7 +5,8 @@ testing patterns for building **Home Assistant custom integrations** and their
 companion Python SDKs — and the full flow for **Lovelace custom cards**
 (frontend plugins).
 
-The patterns target **Platinum** on the HA Integration Quality Scale and
+The patterns apply the pertinent **Bronze/Silver/Gold** rules of the HA
+Integration Quality Scale (Platinum is an aspiration, not a review bar) and
 assume a shared blueprint (e.g. `ha-integration-blueprint`) as the starting
 point for each new integration.
 
