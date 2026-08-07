@@ -365,7 +365,9 @@ Repo setup: **public**, topics added, description set, issues enabled.
 
 ## README essentials
 
-Top of the README (matches the sibling integration repos):
+The header is the same one the sibling integration repos use, in this exact
+order: **title → badges → HACS link → `---` separator → the rest of the
+document.**
 
 ```markdown
 # <Card Name>
@@ -377,6 +379,26 @@ Top of the README (matches the sibling integration repos):
 
 ---
 ```
+
+- **`category=plugin`, not `integration`** — HACS distributes a card as a
+  dashboard resource, so `category=integration` sends the button looking for a
+  `custom_components/` payload this repository does not have.
+- `repository=` is the repository name and `owner=` its GitHub owner.
+- The HACS link is a paragraph of its own, separated from the badge block by a
+  blank line — the badge row and the "Open your Home Assistant instance" button
+  are different things and must not run together.
+- Preserve whatever badges the repository already carries and invent no new
+  ones; all of them belong **before** the HACS link.
+- The `---` right after the HACS link is the header separator. A README that
+  already uses `---` further down keeps those as section breaks — do not add a
+  second separator to the header.
+- **A private repository gets no HACS link.** `my.home-assistant.io` resolves
+  the target through the public GitHub API, so on a private repository the
+  button lands on something HACS cannot install. It is the same reason those
+  repositories run validation with `hacs: false`. Ship the title, the badges
+  and the separator, and add the link once the repository is public. Cards are
+  public by default (HACS `plugin` validation requires it), so this normally
+  only bites a card kept private while it is being built.
 
 Then: a **screenshot** (also satisfies the HACS `images` check), a short feature
 list, a `type: custom:my-card` usage block, and an options table. A card with a
