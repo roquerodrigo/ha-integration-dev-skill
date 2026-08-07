@@ -22,7 +22,8 @@ version: 1.2.0
 # Home Assistant Integration Development
 
 Conventions and patterns for building Home Assistant custom integrations that
-target **Platinum** on the HA Integration Quality Scale. The patterns assume a
+apply the pertinent **Bronze/Silver/Gold** rules of the HA Integration Quality
+Scale — Platinum is an aspiration, not a review bar. The patterns assume a
 shared blueprint (e.g. `ha-integration-blueprint`) as the starting point for
 each new integration.
 
@@ -56,9 +57,10 @@ is not acceptable; the verification workflow below will fail without them.
 
 ## Verification workflow
 
-After every code change, run lint then tests before declaring done. Run the
-tools **directly** — do not rely on a `scripts/lint` wrapper (the convention is
-to drop that wrapper and invoke the underlying commands):
+After every code change, run lint then tests before declaring done. The
+standard is a thin `scripts/lint` wrapper that only chains the four commands
+below (single source for CI, docs, and local runs) — use it when the repo has
+one, or run the commands directly:
 
 ```bash
 # Python repos — prefix each with `uv run` when the repo has a uv.lock:

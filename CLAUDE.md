@@ -49,7 +49,8 @@ part of any version-bump PR you touch.
 
 ## Content conventions (for editing SKILL.md / references)
 
-- The skill targets **Platinum** on the HA Integration Quality Scale and
+- The skill applies the pertinent **Bronze/Silver/Gold** rules of the HA
+  Integration Quality Scale (Platinum is an aspiration, not a review bar) and
   assumes every target repo forked a shared blueprint
   (`ha-integration-blueprint`) — don't add advice that only applies to
   unstructured/non-blueprint integrations.
