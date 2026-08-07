@@ -39,15 +39,21 @@ a one-line comment.
 
 See `architecture.md` for the full layout. The three load-bearing rules:
 
-- **One class per file — no exceptions.** TypedDicts and dataclasses each
-  get their own file under `data/` (a package with `__init__.py`
-  re-exporting public symbols). `type` aliases live in `data/__init__.py`.
-  Helper functions may live alongside the single class that uses them
-  (e.g. `_verify_response` next to the API client in `api.py`).
-  Like the `unique_id` invariant below, this is a **hard blueprint
-  invariant**: a legacy flat multi-class `data.py` is migration debt — migrate
-  it when you touch that area, even if the repo's `CODE_STYLE.md` predates the
-  rule.
+- **One class per file.** TypedDicts and dataclasses each get their own file
+  under `data/` (a package with `__init__.py` re-exporting public symbols).
+  `type` aliases live in `data/__init__.py`. Helper functions may live
+  alongside the single class that uses them (e.g. `_verify_response` next to
+  the API client in `api.py`). Like the `unique_id` invariant below, this is
+  a **blueprint invariant**: a legacy flat multi-class `data.py` is migration
+  debt — migrate it when you touch that area, even if the repo's
+  `CODE_STYLE.md` predates the rule. Two deliberate relaxations:
+  - A TypedDict or `type` alias used by a **single module** may live in that
+    consuming module instead of `data/` — promoting it to `data/` happens
+    when a second consumer appears.
+  - **Leaf dataclasses that decompose one payload** (e.g. the sub-records of
+    a single API response) may cohabit one module — splitting a
+    seven-dataclass response shape into seven files adds navigation cost,
+    not clarity.
 - **One entity per class.** Never share a generic class parametrised by an
   `EntityDescription` subclass with callable fields like `value_fn` or
   `action_fn`. Encode behaviour directly via `@property` and class-level
@@ -66,7 +72,9 @@ See `architecture.md` for the full layout. The three load-bearing rules:
   **domain concept** (e.g. `DEFAULT_SCAN_INTERVAL`, `MIN_TEMPERATURE`,
   payload keys read in more than one file).
 - Literals used exactly once stay inline — no premature extraction.
-- `DOMAIN`, `LOGGER`, and `ATTRIBUTION` always live in `const.py`.
+- `DOMAIN` and `LOGGER` always live in `const.py`; `ATTRIBUTION` too, but
+  only when the integration has a third-party data source to credit (see
+  "Properties and `__init__`" below).
 
 ## File / class member order
 
@@ -85,7 +93,11 @@ Within an entity class, declare members top-to-bottom in this order:
 - Always prefer `@property` over assigning `_attr_*` values in `__init__`.
 - When `__init__` would only call `super().__init__(...)`, omit it.
 - Class-level constants like `_attr_attribution = ATTRIBUTION` are fine.
-- **`unique_id` must be a `@property` — this is the only permitted form.**
+  `_attr_attribution` itself is required **only when the integration has a
+  third-party data source** (a cloud service, a public API) to credit — a
+  purely local device integration has nothing to attribute and should not
+  invent an attribution string.
+- **`unique_id` must be a `@property` — the default and preferred form.**
   Expose it as a computed property returning a stable per-instance key:
   ```python
   @property
@@ -96,10 +108,16 @@ Within an entity class, declare members top-to-bottom in this order:
   Do **not** assign `_attr_unique_id` in `__init__`. If the only reason an
   `__init__` exists is to set `_attr_unique_id`, drop the `__init__` and use the
   property instead. (This matches the blueprint, which wires `unique_id` as a
-  `@property` everywhere.) This is a **hard blueprint invariant** — it holds
+  `@property` everywhere.) This is a **blueprint invariant** — it holds
   even if a repo's older `CODE_STYLE.md` still permits `_attr_unique_id`; migrate
   such code to the property form rather than treating the repo style as an
   override (unlike the coverage gate, which the repo *does* get to set).
+  **Documented exception:** entities whose state is **mutable and locally
+  owned** — push-driven or optimistic/assumed-state entities that update
+  `_attr_*` values as events and commands land — may assign `_attr_unique_id`
+  (and their other `_attr_*` state) in `__init__`. When the whole entity
+  already works through mutable `_attr_*` state, forcing only `unique_id`
+  into a property adds inconsistency, not safety.
 
 ## Entity categories and registry defaults
 
@@ -116,8 +134,15 @@ Within an entity class, declare members top-to-bottom in this order:
 - Never call blocking I/O in a coroutine. Wrap sync SDK calls with
   `await hass.async_add_executor_job(fn, *args)`.
 - Never `time.sleep()` in a coroutine — use `await asyncio.sleep(...)`.
-- Use `hass.async_create_task(coro)` over a bare `asyncio.create_task(coro)`
-  (HA tracks the task so it survives reload/teardown).
+- Never a bare `asyncio.create_task(coro)` — HA neither tracks nor cancels
+  it. Pick the helper that matches the task's lifetime:
+  - `entry.async_create_task(hass, coro)` for work scoped to a config entry —
+    cancelled automatically when the entry unloads.
+  - `entry.async_create_background_task(hass, coro, name)` for long-lived
+    per-entry work (push listeners, reconnect supervisors) that must not
+    block startup and still gets cancelled on unload.
+  - `hass.async_create_task(coro)` only for work that outlives any single
+    entry.
 - Use `homeassistant.util.dt.utcnow()` over `datetime.now(UTC)`. The HA helper
   is patchable in tests.
 
@@ -197,6 +222,13 @@ raise <Domain>ApiClientError(
   (PEP 758, e.g. `except ValueError, TypeError:`) is valid syntax. Do **not**
   flag it as a bug or "Python 2 leftover" — it is equivalent to
   `except (ValueError, TypeError):`.
+- **Do check the runtime floor before using it in an integration**:
+  `requires-python` only governs the dev environment. What guarantees the
+  Python version inside Home Assistant is the `homeassistant` minimum in
+  `hacs.json` — the floor must be an HA release that itself requires
+  Python 3.14, otherwise an older install imports the module and dies with a
+  `SyntaxError`. If the floor doesn't guarantee it, keep the parenthesised
+  form.
 
 ## Conventional commits
 
@@ -319,29 +351,37 @@ max-complexity = 25
 
 ## Pre-commit
 
-`.pre-commit-config.yaml` mirrors the lint commands (`ruff format`,
-`ruff check --fix`, `mypy`) and adds repo-hygiene hooks. As with
-`pyproject.toml`, copy the **shape**, not the literal `rev` strings — bump revs
-via `pre-commit autoupdate`.
+`.pre-commit-config.yaml` runs the lint tools as **local `uv run` hooks**, so
+the hook always uses the exact tool versions pinned in `uv.lock` — a remote
+`ruff-pre-commit` hook carries its own `rev` that silently drifts behind the
+project pin and formats differently from CI. Repo-hygiene hooks (which have
+no project pin to drift from) stay as a remote repo.
 
 ```yaml
 # .pre-commit-config.yaml
-default_install_hook_types: [pre-commit]
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v<current>
+  - repo: local
     hooks:
       - id: ruff-format
-      - id: ruff-check
-        args: [--fix]
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v<current>
-    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
       - id: mypy
-        additional_dependencies:
-          - homeassistant==<current>
-          # add SDK and any types-* packages mypy needs
+        name: mypy
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+        types: [python]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v<current>
@@ -355,3 +395,11 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
 ```
+
+The local `uv run mypy` hook reuses the project venv (which already has
+`homeassistant` installed from the dev group), so it costs nothing extra.
+Never use the `mirrors-mypy` remote hook with
+`additional_dependencies: [homeassistant==...]` — that installs all of Home
+Assistant into the hook's isolated environment, which is prohibitively heavy.
+A repo where the mypy hook is still too slow per-commit may drop it and rely
+on CI plus the local verification workflow instead.

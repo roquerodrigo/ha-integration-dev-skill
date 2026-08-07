@@ -21,7 +21,7 @@ custom_components/<domain>/
 │                            #   (e.g. cloud/, bluetooth/) with own client + errors + types
 ├── config_flow.py           # required — user, reauth, reauth_confirm, reconfigure steps
 ├── options_flow.py          # *conditional — only when there are user-tunable options
-├── diagnostics.py           # *conditional — required for Platinum quality scale
+├── diagnostics.py           # *conditional — add when the entry holds data worth dumping/redacting
 ├── repairs.py               # *conditional — only when registering repair issues
 ├── quality_scale.yaml       # *conditional — required once you declare a Quality Scale tier
 ├── icons.json               # _optional — custom MDI icons per entity
@@ -79,10 +79,15 @@ dataclasses, which each get their own file under `data/` (a package with an
 alongside the single class that uses them (e.g. `_verify_response_or_raise`
 in `api.py`).
 
-This is a **hard blueprint invariant**, like `unique_id`-as-property: a legacy
+This is a **blueprint invariant**, like `unique_id`-as-property: a legacy
 repo carrying a flat multi-class `data.py` is drift to migrate when you touch
 that area — not a repo-style override, even if the repo's own `CODE_STYLE.md`
 predates the rule.
+
+Two deliberate relaxations (see coding-conventions.md): a TypedDict or `type`
+alias with a single consumer may live in that consuming module, and leaf
+dataclasses decomposing one payload may share a module — don't force dozens
+of micro-files for one response shape.
 
 ## Runtime data
 
@@ -159,9 +164,11 @@ One class per file (`options_flow.py`). Changes trigger
 `<Domain><Name><Platform>` — e.g. `<Domain>TemperatureSensor`,
 `<Domain>DoorBinarySensor`.
 
-Base entity always sets `_attr_attribution = ATTRIBUTION`,
-`_attr_has_entity_name = True`, and `device_info` as a `@property`. Member
-order, property-vs-`__init__`, the `unique_id` invariant, and entity
+Base entity always sets `_attr_has_entity_name = True` and `device_info` as a
+`@property`; it also sets `_attr_attribution = ATTRIBUTION` **when the
+integration has a third-party data source to credit** (a local-device
+integration has nothing to attribute). Member order, property-vs-`__init__`,
+the `unique_id` invariant and its push/optimistic exception, and entity
 categories are defined in [coding-conventions.md](./coding-conventions.md).
 
 ## Exception hierarchy
@@ -204,8 +211,13 @@ Sensitive keys go into `TO_REDACT: frozenset[str]`.
   `issue_tracker`, `codeowners`. `version` is mandatory (SemVer).
 - `hacs.json` at repo root pins minimum HA version.
 - **Brand assets live in `custom_components/<domain>/brand/` inside the
-  repo.** Ship `icon.png`, `logo.png` (+ `@2x` variants), and `icon.svg`
-  there. Do **not** rely on the upstream `home-assistant/brands` repo.
+  repo** — that is the versioned source of the artwork. Ship `icon.png`,
+  `logo.png` (+ `@2x` variants), and `icon.svg` there. Be clear about what
+  each side does: **the HA frontend only loads icons from the
+  `brands.home-assistant.io` CDN**, so the in-repo `brand/` directory is
+  never read at runtime — submitting the artwork to the upstream
+  `home-assistant/brands` repo is the tracked step that actually makes icons
+  appear in the UI. Keep `brand/` as the canonical copy either way.
   - **icon** — always **square** (256×256 / 512×512). Symbol only.
   - **logo** — always **rectangular / landscape** (e.g. 256×128 / 512×256).
     Wordmark or full brand mark.
