@@ -14,7 +14,10 @@ when flagging a violation. Hard rules first, judgment-calls later.
   payload for a known-flaky upstream) is an accepted alternative to raising
   `UpdateFailed` — don't flag it when the degradation strategy is explicit.
 - First setup uses `await coordinator.async_config_entry_first_refresh()`,
-  not `async_refresh()`.
+  not `async_refresh()`. **Accepted local-push variant:** a non-blocking
+  `entry.async_create_task(hass, coordinator.async_refresh())` when the
+  transport is slow/intermittent by nature (e.g. passive BLE via proxies) and
+  the degradation strategy is documented — don't flag it in that case.
 - `always_update=False` whenever the payload supports `__eq__` cleanly.
 - A PR adding a second coordinator must justify it by **different polling
   cadence** (not per-entity or per-platform splitting), put it in its own
@@ -56,13 +59,16 @@ when flagging a violation. Hard rules first, judgment-calls later.
 
 ## File organisation
 
-- One class per file — no exceptions. TypedDicts and dataclasses each get
+- One class per file. TypedDicts and dataclasses each get
   their own file under `data/` (a package). `type` aliases live in
   `data/__init__.py`. Flag any module with two or more top-level classes —
   including a flat `data.py` stacking several TypedDicts/dataclasses, **even
   when the repo's own docs still show the flat form**: this is a blueprint
   invariant, not a style preference (report it as migration debt, not a
-  blocker, when the PR doesn't touch `data.py`).
+  blocker, when the PR doesn't touch `data.py`). Two shapes are **not**
+  violations: a TypedDict/`type` alias with a single consumer living in that
+  consuming module, and leaf dataclasses decomposing one payload sharing a
+  module.
 - A platform with multiple entities is a package
   (`sensor/__init__.py` + `sensor/<entity>.py`), not a single
   `sensor.py` stacking the classes.
@@ -79,12 +85,19 @@ when flagging a violation. Hard rules first, judgment-calls later.
 - One class per entity. No generic class parametrised by an
   `EntityDescription` subclass with `value_fn` / `action_fn` callables.
 - Naming `<Domain><Name><Platform>` (e.g. `<Domain>BatterySensor`).
-- State exposed via `@property`, not `_attr_*` assigned in `__init__`.
-  `__init__` omitted when it would only call `super().__init__(...)`.
-- `unique_id` exposed as a `@property` (the only permitted form). Flag any
-  `_attr_unique_id` assigned in `__init__`.
-- Base entity sets `_attr_attribution`, `_attr_has_entity_name = True`, and
-  `device_info` as a `@property`.
+- State exposed via `@property`, not `_attr_*` assigned in `__init__`
+  (push-driven and optimistic/assumed-state entities are the exception — see
+  the `unique_id` bullet below). `__init__` omitted when it would only call
+  `super().__init__(...)`.
+- `unique_id` exposed as a `@property` (the default form). Flag
+  `_attr_unique_id` assigned in `__init__` — **except** in push-driven or
+  optimistic/assumed-state entities whose state already lives in mutable
+  `_attr_*` members updated by events/commands; there the `_attr_*` form is
+  the accepted, consistent one.
+- Base entity sets `_attr_has_entity_name = True` and `device_info` as a
+  `@property`; `_attr_attribution` only when the integration has a
+  third-party data source to credit — don't demand an attribution string
+  from a purely local device integration.
 - Maintenance/telemetry entities (signal strength, firmware version,
   secondary battery) carry `_attr_entity_category = EntityCategory.DIAGNOSTIC`.
   User-tunable settings exposed as entities use `EntityCategory.CONFIG`.
@@ -105,7 +118,11 @@ when flagging a violation. Hard rules first, judgment-calls later.
 - No blocking I/O inside a coroutine — sync SDK calls wrapped in
   `await hass.async_add_executor_job(fn, *args)`.
 - `await asyncio.sleep(...)` only — never `time.sleep()` in a coroutine.
-- `hass.async_create_task(coro)` over bare `asyncio.create_task(coro)`.
+- No bare `asyncio.create_task(coro)`. Per-entry work uses
+  `entry.async_create_task(...)`; long-lived per-entry listeners/supervisors
+  use `entry.async_create_background_task(...)`; only entry-independent work
+  uses `hass.async_create_task(...)`. Flag a push listener or reconnect
+  supervisor started with anything else.
 - `homeassistant.util.dt.utcnow()` over `datetime.now(UTC)` (HA helper is
   patchable in tests).
 
@@ -124,7 +141,10 @@ when flagging a violation. Hard rules first, judgment-calls later.
   permissive types (`entry.data`, etc.).
 - Any `# type: ignore[override]` carries a one-line reason.
 - On `requires-python >= 3.14`, `except A, B:` without parentheses (PEP 758) is
-  valid — do not flag it as a bug.
+  valid — do not flag it as a bug. In an **integration**, do check that the
+  `hacs.json` `homeassistant` floor guarantees a Python 3.14 runtime — if it
+  admits an older HA, the module fails to import there with a `SyntaxError`,
+  and the parenthesised form is required.
 
 ## Imports & module hygiene
 
@@ -214,6 +234,7 @@ when flagging a violation. Hard rules first, judgment-calls later.
 ## Verification gate
 
 - The lint commands and `pytest` were run locally and passed before review —
-  invoked directly (`ruff format --check`, `ruff check`, `mypy <path>`,
-  `pytest`), prefixed with `uv run` in uv-managed repos. No `scripts/lint`
-  wrapper required.
+  via the repo's thin `scripts/lint` wrapper (which only chains
+  `ruff format --check`, `ruff check`, `mypy <path>`, `pytest`) or by
+  invoking the same commands directly, prefixed with `uv run` in uv-managed
+  repos.
