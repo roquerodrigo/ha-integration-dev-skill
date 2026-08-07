@@ -130,13 +130,15 @@ when flagging a violation. Hard rules first, judgment-calls later.
 
 - All state lives on `entry.runtime_data: <Domain>Data`. No
   `hass.data[DOMAIN]`.
-- `<Domain>Data` is a `@dataclass` defined in `data.py`.
+- `<Domain>Data` is a `@dataclass` defined in `data/runtime.py` and
+  re-exported from `data/__init__.py`.
 
 ## Typing
 
 - No `typing.Any`, `object` as a value, bare `dict`/`list`/`tuple`/`set`,
   `dict[str, Any]`, or `Mapping[str, Any]`.
-- `TypedDict` for known JSON/dict shapes — canonical home is `data.py`.
+- `TypedDict` for known JSON/dict shapes — canonical home is the `data/`
+  package, one per file.
 - `cast("TypedDictName", value)` at HA framework boundaries that return
   permissive types (`entry.data`, etc.).
 - Any `# type: ignore[override]` carries a one-line reason.
@@ -210,8 +212,10 @@ when flagging a violation. Hard rules first, judgment-calls later.
 
 ## Quality scale
 
-- `quality_scale.yaml` exists (the blueprint ships it; a fork that deleted it
-  regressed — flag its absence).
+- `quality_scale.yaml` is **optional** — the blueprint does not ship it. It is
+  required only when `manifest.json` declares a `quality_scale` tier: flag a
+  declared tier with no `quality_scale.yaml`, never the file's absence on its
+  own.
 - Each rule's `status` reflects reality: no rule claims `done` for behaviour
   the code doesn't implement. `exempt` carries a `comment` justifying why it
   doesn't apply (unauthenticated source → `reauthentication-flow` exempt; SDK
