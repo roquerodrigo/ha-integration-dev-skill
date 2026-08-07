@@ -8,7 +8,10 @@
 
 ## Typing
 
-Strict typing enforced by `mypy --strict`. No exceptions.
+Strict typing is the bar, enforced by mypy. Integrations enable a curated set
+of strict flags in `pyproject.toml` (see the template below) rather than
+`strict = true`, which fights HA's framework types; SDKs, which own their whole
+type surface, should run `strict = true`.
 
 Banned: `typing.Any`, `object` as a value type, bare `dict` / `list` /
 `tuple` / `set`, `dict[str, Any]`, `Mapping[str, Any]`.
