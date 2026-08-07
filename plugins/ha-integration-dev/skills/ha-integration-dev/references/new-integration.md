@@ -244,3 +244,20 @@ uv run pytest
 6. `.github/workflows/ci.yml` is already in the blueprint.
 7. Enable Dependabot.
 8. Create the first release via release-please.
+
+### Private repository variant
+
+An integration may start (or stay) **private** — the flow above changes in
+three places:
+
+- **HACS validation cannot run**: the validator reads the repository through
+  the public GitHub API. Call the reusable validate workflow with
+  `hacs: false`; hassfest and the version check still run.
+- **GitHub topics are not needed** (they exist for the HACS checks).
+- CodeQL is unavailable on private repos without GitHub Advanced Security —
+  skip the `codeql.yml` workflow.
+
+Everything else stays: branch protection, PRs, release-please, Dependabot.
+Leave a tracked note (README or issue) to flip `hacs: true`, add the topics,
+and add CodeQL when the repo goes public — publishing with validation still
+disabled is a release blocker.
