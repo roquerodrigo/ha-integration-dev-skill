@@ -70,18 +70,19 @@ reset — the global rename in Step 3 will not fix them:
 Files that **stay** (the blueprint ships them and they must survive the fork —
 don't delete them, but review them against the new integration):
 
-- **`quality_scale.yaml`** — keep it. It declares the integration's position on
-  the HA Quality Scale (the target is **Platinum**), and HA's hassfest validates
-  its schema. Rewrite each rule's `status`/`comment` to match what you actually
-  built: a rule the blueprint marks `done` may be `exempt` for you (e.g.
-  `reauthentication-flow` on an unauthenticated source, `inject-websession` when
-  the SDK owns its own connector) or honestly `todo` (e.g. `stale-devices` if
-  removed devices go unavailable but aren't pruned from the registry). Do **not**
-  leave a rule claiming `done` for behaviour you didn't implement, and do **not**
-  delete the file — a missing `quality_scale.yaml` is a silent quality downgrade.
 - **`CODE_STYLE.md`** — keep it; it's the per-repo source of truth this skill
   defers to. Update any prose that no longer matches (same rule as CLAUDE.md).
 - **`CONTRIBUTING.md`** — keep it; update repo name / URLs.
+
+**`quality_scale.yaml` is optional — the blueprint does not ship it.** Add one
+only when the integration declares a `quality_scale` tier in `manifest.json`
+(hassfest then validates the file's schema). When you do add it, every rule's
+`status`/`comment` must match what you actually built: a rule may be `exempt`
+with a justifying comment (e.g. `reauthentication-flow` on an unauthenticated
+source, `inject-websession` when the SDK owns its own connector) or honestly
+`todo` (e.g. `stale-devices` if removed devices go unavailable but aren't
+pruned from the registry). Never leave a rule claiming `done` for behaviour
+you didn't implement.
 
 ## Step 3: Rename the domain
 
@@ -156,7 +157,7 @@ must:
 
 ## Step 8: Define data types
 
-In `data.py` (a package — one class per file, see code-review.md):
+In `data/` (a package — one class per file, see code-review.md):
 - `<NewDomain>ConfigData(TypedDict)` — what the config flow persists
   (credentials, or just a host/socket path for an unauthenticated source)
 - `<NewDomain>OptionsData(TypedDict, total=False)` — from options flow
@@ -230,9 +231,12 @@ uv run pytest
 1. Create the repo at `<your-github-org>/ha-<new-name>` (**public**).
 2. Add GitHub topics — at minimum `home-assistant` and `hacs` (HACS
    validation will fail without valid topics).
-3. Add the `RELEASE_PLEASE_PAT` repo secret — the reusable `ha-release.yml`
-   reads it with **no `GITHUB_TOKEN` fallback**, so without it the release job
-   fails with `Input required and not supplied: token`:
+3. Add the `RELEASE_PLEASE_PAT` repo secret — `release.yml` passes it to the
+   reusable `release-please.yml` as `release-token`, which **falls back to the
+   default `GITHUB_TOKEN`** when unset. The failure mode without the PAT is
+   subtle, not a hard error: pushes made with `GITHUB_TOKEN` do not trigger
+   workflows, so the release PR opens with **stale/missing checks** and branch
+   protection blocks its merge.
    `gh secret set RELEASE_PLEASE_PAT --repo <org>/ha-<new-name> --body "$RELEASE_PLEASE_PAT"`
    Verify the value landed **non-empty**: `gh secret set` accepts an empty
    string and still reports success. If reading the PAT from a `.env`, grep

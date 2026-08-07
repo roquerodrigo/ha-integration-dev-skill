@@ -32,7 +32,8 @@ Enforce a minimum coverage via `pyproject.toml` (`--cov-fail-under=N`).
   transport/byte layer rather than lowering the bar.
 - **The repo's own configured gate is the source of truth.** Whatever
   `--cov-fail-under` the repo's `pyproject.toml` / `CODE_STYLE.md` sets wins —
-  a higher gate (e.g. the blueprint's 95) *or* a lower one (e.g. an SDK at 60).
+  a higher gate (e.g. 95) *or* a lower one (e.g. an SDK at 60). The blueprint
+  itself sets 90.
   In review, treat a gate below 90 as drift worth flagging (debt to repay), not
   a failure to block on; never "fail" a repo for honouring its own lower gate.
 
@@ -139,20 +140,38 @@ def test_no_empty_translation_values():
 
 ## CI/CD pipeline
 
-Recommended jobs for a Home Assistant integration repo (extract into reusable
-workflows under `<your-org>/.github` once the patterns stabilise):
+CI is composed from the **reusable workflows in `roquerodrigo/workflows`** —
+do not hand-roll the jobs in each repo. A standard integration `ci.yml` calls:
 
-- **lint**: `ruff format --check`, `ruff check`, `mypy`
-- **tests**: `pytest` with the coverage gate from `pyproject.toml`
-- **validate**: `home-assistant/actions/hassfest` + `hacs/action`
-- **codeql**: weekly security scan
-- **release**: `googleapis/release-please-action` — parses Conventional Commits
-  to bump version, update `manifest.json`, and generate `CHANGELOG.md`
-- **auto-assign**: assigns each PR to the codeowner
-- **update-pr-branch**: keeps PRs in sync with `main`
+- **lint** — `roquerodrigo/workflows/.github/workflows/python-lint.yml@main`:
+  `uv run ruff check`, `uv run ruff format --check`, and `uv run mypy` (the
+  mypy target comes from `[tool.mypy] files` in the consumer's
+  `pyproject.toml`, so CI and local runs check the same paths).
+- **tests** — `python-test.yml@main`: `uv run pytest`; the coverage gate lives
+  in the consumer's `pyproject.toml`.
+- **validate** — `home-assistant-validate.yml@main`: hassfest + HACS
+  validation + a manifest×pyproject version check. Inputs cover the three
+  consumer shapes: `hacs: false` for a **private** repo (HACS validation reads
+  the repository through the public GitHub API), `hacs-category: plugin` for a
+  Lovelace card, and `hassfest` / `version-check` opt-outs for repos with no
+  manifest.
+- **update-pr-branch** — `update-pr-branch.yml@main` keeps PRs in sync with
+  `main`.
 
-`lint` should gate `tests`, `validate`, and `release` so a single style issue
-doesn't waste downstream minutes.
+`lint` gates `tests` and `validate` via `needs:` so a single style issue
+doesn't waste downstream minutes, and a `concurrency` block cancels superseded
+pull-request runs.
+
+Separate workflows in the same repo:
+
+- **codeql** — `codeql.yml@main`, weekly security scan.
+- **auto-assign** — `auto-assign.yml@main`, assigns issues/PRs to the owner.
+- **release** (`release.yml`) — gated on a **successful CI run** rather than on
+  the push itself (`workflow_run` on CI completion, `push` event only, so a
+  green PR run cannot cut a release), calling `release-please.yml@main` with
+  `release-token: ${{ secrets.RELEASE_PLEASE_PAT }}`. The reusable falls back
+  to `GITHUB_TOKEN` when the secret is unset — but pushes made with that token
+  trigger no workflows, leaving the release PR with stale checks.
 
 ## Running tests locally
 
