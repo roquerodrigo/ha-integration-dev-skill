@@ -197,6 +197,14 @@ when flagging a violation. Hard rules first, judgment-calls later.
   doesn't apply (unauthenticated source → `reauthentication-flow` exempt; SDK
   owns its connector → `inject-websession` exempt). A half-done rule is `todo`,
   not `done`.
+- Objective spot-checks for the rules most often claimed falsely:
+  - `parallel-updates: done` requires a module-level `PARALLEL_UPDATES`
+    constant in **every** platform module — no constant, no `done`.
+  - `exception-translations: done` requires raising `HomeAssistantError` (or
+    subclasses) with `translation_domain`/`translation_key`, plus the matching
+    `exceptions` section in the translation files.
+  - `repair-issues: done` requires the issue-raising helper to actually be
+    called somewhere — a scaffold function with no call site is `todo`.
 
 ## Manifest & release metadata
 
