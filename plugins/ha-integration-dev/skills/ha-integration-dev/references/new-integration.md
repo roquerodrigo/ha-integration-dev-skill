@@ -30,7 +30,8 @@ reset — the global rename in Step 3 will not fix them:
 - **`README.md`** — rewrite from scratch for the new integration. The
   blueprint's README describes setup steps, entity tables, and architecture
   specific to the blueprint; none of that applies. At minimum include: what
-  the integration does, how to install, and how to configure.
+  the integration does, how to install, and how to configure. Keep the header
+  layout described below.
 - **`CLAUDE.md`** — rewrite its prose sections too, not just the README. The
   blueprint's CLAUDE.md describes a username/password config flow with reauth,
   an `AuthenticationError`, a `_credentials_schema` builder, and a populated
@@ -83,6 +84,40 @@ source, `inject-websession` when the SDK owns its own connector) or honestly
 `todo` (e.g. `stale-devices` if removed devices go unavailable but aren't
 pruned from the registry). Never leave a rule claiming `done` for behaviour
 you didn't implement.
+
+### README header
+
+The rewritten README keeps the header every integration and card repository
+shares, in this exact order: **title → badges → HACS link → `---` separator →
+the rest of the document.**
+
+```markdown
+# <New Name>
+
+[![CI](https://github.com/<your-github-org>/ha-<new-name>/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-github-org>/ha-<new-name>/actions/workflows/ci.yml)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+
+[![Open your Home Assistant instance and open the repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=<your-github-org>&repository=ha-<new-name>&category=integration)
+
+---
+```
+
+- `repository=` is the repository name and `owner=` its GitHub owner. The
+  Step 3 find-and-replace rewrites the repository name but not the owner, so
+  check the link by hand.
+- **`category=integration`** here. A Lovelace card repository uses
+  `category=plugin` instead (see [lovelace-cards.md](./lovelace-cards.md)).
+- The HACS link is a paragraph of its own, separated from the badge block by a
+  blank line — the badge row and the "Open your Home Assistant instance" button
+  are different things and must not run together.
+- Preserve whatever badges the repository already carries and invent no new
+  ones; all of them belong **before** the HACS link.
+- The `---` right after the HACS link is the header separator. A README that
+  already uses `---` further down keeps those as section breaks — do not add a
+  second separator to the header.
+
+**A private repository gets no HACS link** — see the private repository variant
+in Step 14.
 
 ## Step 3: Rename the domain
 
@@ -258,10 +293,15 @@ three places:
   the public GitHub API. Call the reusable validate workflow with
   `hacs: false`; hassfest and the version check still run.
 - **GitHub topics are not needed** (they exist for the HACS checks).
+- **The README header carries no HACS link.** `my.home-assistant.io` resolves
+  the repository through the same public GitHub API, so on a private repository
+  the button lands on something HACS cannot install — the identical reason
+  behind `hacs: false`. Keep the title, the badges and the `---` separator, and
+  drop the "Open your Home Assistant instance" paragraph.
 - CodeQL is unavailable on private repos without GitHub Advanced Security —
   skip the `codeql.yml` workflow.
 
 Everything else stays: branch protection, PRs, release-please, Dependabot.
 Leave a tracked note (README or issue) to flip `hacs: true`, add the topics,
-and add CodeQL when the repo goes public — publishing with validation still
-disabled is a release blocker.
+restore the HACS link in the README header, and add CodeQL when the repo goes
+public — publishing with validation still disabled is a release blocker.
