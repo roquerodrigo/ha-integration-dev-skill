@@ -7,14 +7,14 @@
   },
   "metadata": {
     "description": "Conventions, patterns, and code review for Home Assistant custom integrations, Python SDKs, and Lovelace custom cards",
-    "version": "1.1.0"
+    "version": "1.3.0"
   },
   "plugins": [
     {
       "name": "ha-integration-dev",
       "source": "./plugins/ha-integration-dev",
       "description": "Conventions, patterns, and code review for Home Assistant custom integrations, their Python SDKs, and Lovelace custom cards.",
-      "version": "1.1.0",
+      "version": "1.3.0",
       "license": "MIT",
       "keywords": ["home-assistant", "hacs", "integration", "python", "sdk", "lovelace", "custom-card"],
       "category": "development"

@@ -30,10 +30,10 @@ This repo has no `package.json`, no Python project, no CI workflow
 
 Do not go looking for a lint/test command — there isn't one.
 
-## Versioning: three places must move together
+## Versioning: three files, four declarations
 
-The plugin version is declared in three separate files and Claude Code does
-not enforce that they match:
+The plugin version is declared four times across three files and Claude Code
+does not enforce that they match:
 
 - `.claude-plugin/marketplace.json` → `metadata.version` **and**
   `plugins[0].version`
@@ -41,11 +41,17 @@ not enforce that they match:
 - `plugins/ha-integration-dev/skills/ha-integration-dev/SKILL.md` →
   frontmatter `version`
 
-When bumping the skill (new behavior, not just a typo fix), bump all three.
-As of the last commit on `main` (`f186120`, "v1.2.0") `SKILL.md` was bumped
-to `1.2.0` but `marketplace.json` / `plugin.json` were left at `1.1.0` —
-check current values before assuming they're in sync, and fix the drift as
-part of any version-bump PR you touch.
+When bumping the skill (new behavior, not just a typo fix), bump all four
+declarations to the same value in a single commit. There is no release
+automation and no git tags — the version only ever moves because someone
+edits these files. A bump that touches one file and not the others is a bug,
+so read all four values back after editing and confirm they agree:
+
+```sh
+grep -rn '"version"' .claude-plugin/marketplace.json \
+  plugins/ha-integration-dev/.claude-plugin/plugin.json
+grep -n '^version:' plugins/ha-integration-dev/skills/ha-integration-dev/SKILL.md
+```
 
 ## Content conventions (for editing SKILL.md / references)
 
