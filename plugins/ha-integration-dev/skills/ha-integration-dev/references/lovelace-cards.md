@@ -19,13 +19,42 @@ visual** over entities that already exist. If you are adding no new entities,
 services, or device state, it is a card.
 
 - **Rejected anti-pattern:** a `custom_components/<domain>` integration that
-  only exists to serve a JS file via `add_extra_js_url`. That drags in a config
-  entry, setup/unload, and HACS integration validation for what is really a
-  frontend asset. If it renders, it's a card; if it fetches/owns state, it's an
-  integration.
+  **only** exists to serve a JS file via `add_extra_js_url`. That drags in a
+  config entry, setup/unload, and HACS integration validation for what is
+  really a frontend asset. If it renders, it's a card; if it fetches/owns
+  state, it's an integration.
 - The Python-only gates in this skill (`ruff`/`mypy`/`pytest`, "tests ship with
   code", quality scale) **do not apply** to cards. Cards have their own
   verification (below).
+
+## Embedded companion card (inside an integration)
+
+A real integration (one that owns entities/state) may legitimately **ship a
+companion card** for its own entities instead of maintaining a second repo.
+The anti-pattern above is an integration that serves *only* JS — not an
+integration that also serves its card.
+
+Layout and registration:
+
+- The card lives at `custom_components/<domain>/www/<card-name>.js` and is
+  served through HA's static path for the integration.
+- Register it as a **Lovelace dashboard resource** (created/updated by the
+  integration at setup, with the integration version as a `?v=` cache-buster)
+  — **not** via `frontend.add_extra_js_url`. The `add_extra_js_url` route
+  races the frontend at startup: a dashboard page loaded at boot can render
+  before the extra module is injected, and the card never defines. The
+  dashboard-resource route survives that race.
+- Guard the definition for re-imports and double-registration:
+  ```js
+  if (!customElements.get("my-card")) {
+    customElements.define("my-card", MyCard);
+  }
+  ```
+  A second `customElements.define` for the same tag throws and kills the
+  card, and an embedded card can be loaded twice during resource migrations.
+- The card file itself follows every rule in this reference (contract,
+  editor, i18n, escaping); the Python side follows the integration
+  references, and `node --check` on the card joins the repo's verification.
 
 ## Repo layout (zero-build, `content_in_root`)
 
@@ -147,6 +176,19 @@ Rules:
 - **Read `hass.states` / `hass.entities` / `hass.devices`** for auto-discovery;
   prefer the device name (`devices[id].name_by_user || .name`) over a raw
   entity's `friendly_name`.
+- **Escape every dynamic string interpolated into `innerHTML`.** Entity
+  names, friendly names, and config values (`title`, labels) are
+  user-controlled: interpolating them raw breaks the markup and is an XSS
+  vector (`<img onerror=…>` in a renamed entity executes). Route text through
+  an escape helper — attribute values included:
+  ```js
+  const escapeHtml = (value) =>
+    String(value).replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[ch]));
+  ```
+  Only trusted, card-owned fragments (your own `<style>` block, icon names
+  you validated) may skip it.
 
 ## Visual editor (`ha-form`)
 
@@ -174,7 +216,13 @@ class MyCardEditor extends HTMLElement {
       this._form = document.createElement("ha-form");
       this._form.computeLabel = (s) => this._labels[s.name] ?? s.name;
       this._form.addEventListener("value-changed", (ev) => {
-        const config = { type: "custom:my-card", ...ev.detail.value };
+        // Round-trip the whole config: spread the existing config first so
+        // keys the schema doesn't cover (hand-written YAML) survive edits.
+        const config = { ...this._config, ...ev.detail.value };
+        for (const [key, value] of Object.entries(config)) {
+          if (value === "" || value == null) delete config[key];
+        }
+        config.type = this._config.type ?? "custom:my-card";
         this.dispatchEvent(new CustomEvent("config-changed", {
           detail: { config }, bubbles: true, composed: true }));
       });
@@ -190,6 +238,18 @@ customElements.define("my-card-editor", MyCardEditor);
 
 Keep option **values** stable (they're persisted config); only the **labels**
 are display text and get localized.
+
+Two editor rules that come straight from field bugs:
+
+- **The editor must round-trip the full config.** Emitting only
+  `ev.detail.value` silently **deletes** every key the `ha-form` schema
+  doesn't model — a hand-written `entities:` list in YAML disappears the
+  moment the user opens the visual editor. Always spread `this._config`
+  first, then the form values (as in the example above).
+- **Prune empty values instead of persisting them.** A cleared text field
+  emits `""`; stored as `title: ""` it freezes the header blank and defeats
+  any localized runtime default (which only applies when the key is absent).
+  Delete empty-string/nullish keys before dispatching `config-changed`.
 
 ## Internationalization
 
