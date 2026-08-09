@@ -18,8 +18,10 @@ the body, drives activation.
 
 ## There is nothing to build/lint/test
 
-This repo has no `package.json`, no Python project, no CI workflow
-(`.github/workflows/` does not exist). "Verifying" a change means:
+This repo has no `package.json` and no Python project. The only CI is
+`.github/workflows/auto-assign.yml` (issue/PR triage, delegated to
+`roquerodrigo/workflows`) — there is no build/lint/test job. "Verifying" a
+change means:
 
 1. Read the edited Markdown/JSON back and check it's internally consistent
    (cross-references between `SKILL.md` and `references/*.md` still resolve,
@@ -78,5 +80,5 @@ This is a **public** GitHub repo (`roquerodrigo/ha-integration-dev-skill`)
 with feature branches and PRs for every change (see `git log` — commits are
 Conventional Commits, PRs referenced as `(#1)`, `(#2)`, …) — this follows the
 global public-repo convention (branch + PR, never push straight to `main`,
-merge commits only). Update `main` locally before branching for a new
-feature.
+rebase merge only — merge commits and squash are disabled). Update `main`
+locally before branching for a new feature.
