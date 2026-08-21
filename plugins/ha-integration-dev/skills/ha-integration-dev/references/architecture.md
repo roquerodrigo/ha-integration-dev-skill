@@ -246,13 +246,28 @@ Sensitive keys go into `TO_REDACT: frozenset[str]`.
   `issue_tracker`, `codeowners`. `version` is mandatory (SemVer).
 - `hacs.json` at repo root pins minimum HA version.
 - **Brand assets live in `custom_components/<domain>/brand/` inside the
-  repo** — that is the versioned source of the artwork. Ship `icon.png`,
-  `logo.png` (+ `@2x` variants), and `icon.svg` there. Be clear about what
-  each side does: **the HA frontend only loads icons from the
-  `brands.home-assistant.io` CDN**, so the in-repo `brand/` directory is
-  never read at runtime — submitting the artwork to the upstream
-  `home-assistant/brands` repo is the tracked step that actually makes icons
-  appear in the UI. Keep `brand/` as the canonical copy either way.
+  repo, and that directory is what Home Assistant serves.** Since **HA
+  2026.3** the core `brands` integration proxies brand images through
+  `/api/brands/integration/<domain>/<image>` and reads this directory first,
+  falling back to the `brands.home-assistant.io` CDN only when the file is
+  absent. The directory existing is the entire opt-in —
+  `Integration.has_branding` is `"brand" in self._top_level_files`, and no
+  `manifest.json` key is involved.
+  - **There is nothing to submit anywhere.** `home-assistant/brands` keeps a
+    legacy `custom_integrations/` folder but **no longer accepts pull
+    requests for custom integrations**. Never add a tracked TODO or a
+    roadmap item for submitting artwork upstream; shipping `brand/` is the
+    whole job. (See the
+    [announcement](https://developers.home-assistant.io/blog/2026/02/24/brands-proxy-api/).)
+  - Only these filenames are served (`ALLOWED_IMAGES` in
+    `homeassistant/components/brands/const.py`), and a missing one falls back
+    down a chain ending at `icon.png`: `icon.png`, `logo.png`, `icon@2x.png`,
+    `logo@2x.png`, `dark_icon.png`, `dark_logo.png`, `dark_icon@2x.png`,
+    `dark_logo@2x.png`. An `icon.svg` may be kept as the render source; HA
+    ignores it.
+  - HACS's own downloads panel may still show "icon not available" for
+    integrations shipping local brand images — that is a HACS gap, not a
+    packaging mistake.
   - **icon** — always **square** (256×256 / 512×512). Symbol only.
   - **logo** — always **rectangular / landscape** (e.g. 256×128 / 512×256).
     Wordmark or full brand mark.

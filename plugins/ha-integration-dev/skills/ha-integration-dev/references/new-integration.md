@@ -62,6 +62,10 @@ reset — the global rename in Step 3 will not fix them:
   run), keep the blueprint placeholders only as a stopgap so validation
   passes, add a tracked TODO to the README, and flag it prominently in your
   final report — never cut a release that still ships the blueprint's artwork.
+  Shipping this directory is the **whole** job: HA 2026.3+ serves it directly
+  and nothing is submitted to `home-assistant/brands` any more (see
+  [architecture.md](./architecture.md)). The only TODO worth tracking is
+  getting the *right artwork*, never "register the brand upstream".
 - **`.idea/`** — either delete the directory entirely (it can be regenerated
   by the IDE) or rename `ha-integration-blueprint.iml` →
   `ha-<new-name>.iml` and update `modules.xml` to match.
