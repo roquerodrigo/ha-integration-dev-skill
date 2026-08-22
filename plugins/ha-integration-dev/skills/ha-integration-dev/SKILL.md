@@ -8,8 +8,8 @@ description: >-
   entities, fix bugs, refactor,
   add tests, review code, scaffold a new integration from a blueprint, bump
   dependencies, or apply any code change in such a repo. Also use when the user
-  mentions HACS, config flow, coordinator, reauth, translations, quality scale,
-  or any Home Assistant integration development concept. It also covers building
+  mentions HACS, config flow, coordinator, reauth, translations, or any Home
+  Assistant integration development concept. It also covers building
   a Home Assistant **Lovelace custom card** — a zero-build frontend web component
   shipped as a HACS plugin/dashboard resource (the card `.js` lives at the repo
   root with a `hacs.json`, not in `custom_components/`). Use it too when the user
@@ -21,11 +21,9 @@ version: 1.3.0
 
 # Home Assistant Integration Development
 
-Conventions and patterns for building Home Assistant custom integrations that
-apply the pertinent **Bronze/Silver/Gold** rules of the HA Integration Quality
-Scale — Platinum is an aspiration, not a review bar. The patterns assume a
-shared blueprint (e.g. `ha-integration-blueprint`) as the starting point for
-each new integration.
+Conventions and patterns for building Home Assistant custom integrations. The
+patterns assume a shared blueprint (e.g. `ha-integration-blueprint`) as the
+starting point for each new integration.
 
 ## When NOT to use
 
@@ -159,5 +157,5 @@ card** rather than a Python integration — a zero-build web component shipped a
 a HACS plugin/dashboard resource. It covers card-vs-integration, repo layout,
 the web-component contract (`setConfig`/`set hass`/`getConfigElement`/
 `customCards`), the `ha-form` visual editor, internationalization, manual vs.
-HACS install, and the CI/release flow. The Python conventions, testing, and
-quality-scale sections above do **not** apply to cards.
+HACS install, and the CI/release flow. The Python conventions and testing
+sections above do **not** apply to cards.

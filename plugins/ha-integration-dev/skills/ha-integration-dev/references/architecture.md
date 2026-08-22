@@ -23,7 +23,6 @@ custom_components/<domain>/
 ├── options_flow.py          # *conditional — only when there are user-tunable options
 ├── diagnostics.py           # *conditional — add when the entry holds data worth dumping/redacting
 ├── repairs.py               # *conditional — only when registering repair issues
-├── quality_scale.yaml       # *conditional — required once you declare a Quality Scale tier
 ├── icons.json               # _optional — custom MDI icons per entity
 ├── manifest.json            # required
 ├── exceptions/              # *conditional — central exception package:

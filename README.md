@@ -5,10 +5,8 @@ testing patterns for building **Home Assistant custom integrations** and their
 companion Python SDKs — and the full flow for **Lovelace custom cards**
 (frontend plugins).
 
-The patterns apply the pertinent **Bronze/Silver/Gold** rules of the HA
-Integration Quality Scale (Platinum is an aspiration, not a review bar) and
-assume a shared blueprint (e.g. `ha-integration-blueprint`) as the starting
-point for each new integration.
+The patterns assume a shared blueprint (e.g. `ha-integration-blueprint`) as the
+starting point for each new integration.
 
 ## What's inside
 
@@ -58,7 +56,7 @@ loads automatically when its triggers match.
 - Lovelace **custom card** repos (a card `.js` at the root with a `hacs.json`,
   no `custom_components/`)
 - Conversations mentioning: HACS, config flow, coordinator, reauth,
-  translations, quality scale, custom card, `ha-form` editor, `customCards`, or
+  translations, custom card, `ha-form` editor, `customCards`, or
   other HA integration / frontend-card concepts
 
 ## When it does NOT trigger

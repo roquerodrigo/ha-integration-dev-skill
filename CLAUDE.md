@@ -57,9 +57,7 @@ grep -n '^version:' plugins/ha-integration-dev/skills/ha-integration-dev/SKILL.m
 
 ## Content conventions (for editing SKILL.md / references)
 
-- The skill applies the pertinent **Bronze/Silver/Gold** rules of the HA
-  Integration Quality Scale (Platinum is an aspiration, not a review bar) and
-  assumes every target repo forked a shared blueprint
+- The skill assumes every target repo forked a shared blueprint
   (`ha-integration-blueprint`) — don't add advice that only applies to
   unstructured/non-blueprint integrations.
 - `SKILL.md` is deliberately terse; anything long or situational belongs in
