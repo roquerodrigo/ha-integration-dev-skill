@@ -79,16 +79,6 @@ don't delete them, but review them against the new integration):
   defers to. Update any prose that no longer matches (same rule as CLAUDE.md).
 - **`CONTRIBUTING.md`** — keep it; update repo name / URLs.
 
-**`quality_scale.yaml` is optional — the blueprint does not ship it.** Add one
-only when the integration declares a `quality_scale` tier in `manifest.json`
-(hassfest then validates the file's schema). When you do add it, every rule's
-`status`/`comment` must match what you actually built: a rule may be `exempt`
-with a justifying comment (e.g. `reauthentication-flow` on an unauthenticated
-source, `inject-websession` when the SDK owns its own connector) or honestly
-`todo` (e.g. `stale-devices` if removed devices go unavailable but aren't
-pruned from the registry). Never leave a rule claiming `done` for behaviour
-you didn't implement.
-
 ### README header
 
 The rewritten README keeps the header every integration and card repository

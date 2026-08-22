@@ -24,7 +24,7 @@ services, or device state, it is a card.
   really a frontend asset. If it renders, it's a card; if it fetches/owns
   state, it's an integration.
 - The Python-only gates in this skill (`ruff`/`mypy`/`pytest`, "tests ship with
-  code", quality scale) **do not apply** to cards. Cards have their own
+  code") **do not apply** to cards. Cards have their own
   verification (below).
 
 ## Embedded companion card (inside an integration)
