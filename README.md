@@ -1,5 +1,7 @@
 # ha-integration-dev-skill
 
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/roquerodrigo)
+
 A Claude Code plugin that teaches Claude the conventions, architecture, and
 testing patterns for building **Home Assistant custom integrations** and their
 companion Python SDKs — and the full flow for **Lovelace custom cards**
@@ -86,6 +88,10 @@ plugins/ha-integration-dev/
         ├── maintenance.md
         └── lovelace-cards.md
 ```
+
+## Support
+
+This plugin is built and maintained on personal time. If it is useful to you, consider [sponsoring the work](https://github.com/sponsors/roquerodrigo) — it keeps the development, the testing and the releases coming.
 
 ## License
 
