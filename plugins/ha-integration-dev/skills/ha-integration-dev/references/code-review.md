@@ -220,14 +220,17 @@ when flagging a violation. Hard rules first, judgment-calls later.
   device or service only exists in specific countries, absent when the
   integration works worldwide. A wrong tag hides the repository from HACS
   users who filter by another country.
-- When `country` is set, README, docstrings and comments are in that country's
-  language, identifiers are English, and native domain terms are left
-  untranslated ("Language" in `coding-conventions.md`).
+- When `country` is set, docs, comments, commits, PR text, changelog headings
+  and `.github/` templates are in that country's language, identifiers are
+  English, and native domain terms are left untranslated ("Language" in
+  `coding-conventions.md`). Write the review itself in that language too.
 
 ## Commit message
 
 - Conventional Commits format: `feat`/`fix`/`perf`/`refactor`/...
-- Subject line is imperative, lowercase, no trailing period.
+- Subject line is imperative, lowercase, no trailing period — in the
+  repository language (the `country` language when set, English otherwise);
+  type and scope are always English.
 - `BREAKING CHANGE:` footer present for any major-bump change.
 
 ## Verification gate

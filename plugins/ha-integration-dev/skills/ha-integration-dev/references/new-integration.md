@@ -179,10 +179,13 @@ feed):
   a local-protocol integration). Tagging a global integration with the
   author's own country hides it from everyone else; leaving a national
   service untagged only adds noise to other countries' stores.
-- Setting `country` also sets the **documentation language**: README,
-  docstrings and comments are written in that country's language, code stays
-  English, and native domain terms are never translated — see "Language" in
-  `coding-conventions.md`.
+- Setting `country` also sets the **repository language**: documentation,
+  comments, commits, PRs, changelog, issue/PR templates and every public reply
+  are written in that country's language, code stays English, and native
+  domain terms are never translated — see "Language" in
+  `coding-conventions.md`. Translate the forked `.github/` templates, the
+  `changelog-sections` headings and the README at fork time, before the first
+  commit.
 
 ## Step 6: Update pyproject.toml
 
