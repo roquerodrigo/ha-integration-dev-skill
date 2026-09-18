@@ -243,7 +243,9 @@ Sensitive keys go into `TO_REDACT: frozenset[str]`.
 - One integration per repository at `custom_components/<domain>/`.
 - `manifest.json` with `domain`, `name`, `version`, `documentation`,
   `issue_tracker`, `codeowners`. `version` is mandatory (SemVer).
-- `hacs.json` at repo root pins minimum HA version.
+- `hacs.json` at repo root pins minimum HA version, and carries `country`
+  (ISO 3166-1 alpha-2, string or list) **only** when the device or service is
+  country-specific — see `new-integration.md` Step 5 for the decision rule.
 - **Brand assets live in `custom_components/<domain>/brand/` inside the
   repo, and that directory is what Home Assistant serves.** Since **HA
   2026.3** the core `brands` integration proxies brand images through
