@@ -1,0 +1,20 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      pull-requests: write
+    uses: roquerodrigo/workflows/.github/workflows/release-please.yml@main
+    secrets:
+      release-token: ${{ secrets.RELEASE_PLEASE_PAT }}
