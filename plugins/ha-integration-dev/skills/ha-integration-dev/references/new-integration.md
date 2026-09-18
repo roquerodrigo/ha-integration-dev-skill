@@ -152,6 +152,38 @@ as the class prefix. Replace globally:
 }
 ```
 
+**Decide `country` here, not later.** The blueprint ships without it because
+the sample integration is not tied to any country — a fork has to make the
+call. Add the key when the device or service only exists in specific
+countries (a national postal service, a regional utility, a city transit
+feed):
+
+```json
+{
+  "name": "<New Name>",
+  "country": ["BR"],
+  "homeassistant": "<min-ha-version>",
+  "hacs": "<min-hacs-version>"
+}
+```
+
+- Values are **ISO 3166-1 alpha-2** codes. HACS accepts a single string
+  (`"BR"`) or a list (`["NO", "SE", "DK"]`) and rejects anything outside its
+  own country list; prefer the list form even for one country so adding a
+  second is a one-line diff.
+- HACS users can set a country in the HACS options. When they do, a
+  repository whose `country` does not include it is **hidden from the
+  store** (already-installed repositories stay visible). A repository with no
+  `country` is shown to everyone.
+- So **omit the key for anything usable worldwide** (a device sold globally,
+  a local-protocol integration). Tagging a global integration with the
+  author's own country hides it from everyone else; leaving a national
+  service untagged only adds noise to other countries' stores.
+- Setting `country` also sets the **documentation language**: README,
+  docstrings and comments are written in that country's language, code stays
+  English, and native domain terms are never translated — see "Language" in
+  `coding-conventions.md`.
+
 ## Step 6: Update pyproject.toml
 
 - Change `name`, `version` (to `"0.1.0"`), `description`.

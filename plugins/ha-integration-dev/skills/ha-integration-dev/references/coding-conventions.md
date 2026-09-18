@@ -4,7 +4,26 @@
 
 - Code is written in English: file names, class names, variable names,
   dictionary keys, identifier strings.
-- User-facing strings live in `translations/<locale>.json` only.
+- User-facing strings live in `translations/<locale>.json` only. `en.json` is
+  always present; a country-specific integration also ships its country's
+  locale.
+- **A country-specific repository documents itself in that country's
+  language.** When `hacs.json` declares `country`, the README, the other
+  Markdown docs, docstrings and code comments are written in the language of
+  that country (`["BR"]` → Brazilian Portuguese). Without `country` — or when
+  the listed countries do not share a language — documentation stays English.
+- **Code stays English regardless of `country`**: the language of the prose
+  never leaks into identifiers, file names, keys or log messages. Commit
+  messages, PR titles and changelogs also stay English — the release tooling
+  builds the changelog from them.
+- **Native domain terms keep their original language, in code and in prose.**
+  They are the ubiquitous language shared with the users and with the upstream
+  service, and a translation only forces everyone to map it back: write
+  `bandeira_tarifaria`, `unidade_consumidora`, `cep`, `Linha`, not
+  `tariff_flag`, `consumer_unit`, `zip_code`, `Line`. Everything around the
+  term is English (`fetch_bandeira_tarifaria`, `UnidadeConsumidoraSensor`).
+  Identifiers drop diacritics (`estacao`); prose and translated strings keep
+  them (`estação`).
 
 ## Typing
 

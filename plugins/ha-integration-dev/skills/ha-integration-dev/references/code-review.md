@@ -216,6 +216,13 @@ when flagging a violation. Hard rules first, judgment-calls later.
   (release-please usually handles this from the commit message).
 - `codeowners` still accurate.
 - `hacs.json` `homeassistant` minimum reflects any new HA API usage.
+- `hacs.json` `country` matches reality: present (ISO 3166-1 alpha-2) when the
+  device or service only exists in specific countries, absent when the
+  integration works worldwide. A wrong tag hides the repository from HACS
+  users who filter by another country.
+- When `country` is set, README, docstrings and comments are in that country's
+  language, identifiers are English, and native domain terms are left
+  untranslated ("Language" in `coding-conventions.md`).
 
 ## Commit message
 

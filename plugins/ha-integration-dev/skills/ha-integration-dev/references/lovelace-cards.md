@@ -89,6 +89,10 @@ Only these keys are valid: `name` (**required**), `content_in_root`,
 }
 ```
 
+`country` follows the same rule as for integrations (`new-integration.md`
+Step 5): cards are almost always country-agnostic, so omit it unless the card
+only makes sense for a country-specific integration.
+
 > There is **no `hacs` key**. Adding `"hacs": "<version>"` fails the HACS
 > `hacsjson` validation check ("invalid hacs.json"). `homeassistant` is the
 > minimum HA version, not a HACS version.
