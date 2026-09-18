@@ -18,9 +18,10 @@ the body, drives activation.
 
 ## There is nothing to build/lint/test
 
-This repo has no `package.json` and no Python project. The only CI is
-`.github/workflows/auto-assign.yml` (issue/PR triage, delegated to
-`roquerodrigo/workflows`) — there is no build/lint/test job. "Verifying" a
+This repo has no `package.json` and no Python project. The workflows are
+`.github/workflows/auto-assign.yml` (issue/PR triage) and
+`.github/workflows/release.yml` (release-please), both delegated to
+`roquerodrigo/workflows` — there is no build/lint/test job. "Verifying" a
 change means:
 
 1. Read the edited Markdown/JSON back and check it's internally consistent
@@ -32,7 +33,7 @@ change means:
 
 Do not go looking for a lint/test command — there isn't one.
 
-## Versioning: three files, four declarations
+## Versioning: release-please owns it
 
 The plugin version is declared four times across three files and Claude Code
 does not enforce that they match:
@@ -43,11 +44,23 @@ does not enforce that they match:
 - `plugins/ha-integration-dev/skills/ha-integration-dev/SKILL.md` →
   frontmatter `version`
 
-When bumping the skill (new behavior, not just a typo fix), bump all four
-declarations to the same value in a single commit. There is no release
-automation and no git tags — the version only ever moves because someone
-edits these files. A bump that touches one file and not the others is a bug,
-so read all four values back after editing and confirm they agree:
+**Never edit them by hand.** `.github/workflows/release.yml` runs
+release-please on every push to `main`; it keeps a release PR open, and that
+PR bumps all four declarations (`extra-files` in
+`release-please-config.json`), `.release-please-manifest.json` and
+`CHANGELOG.md` together. Merging the release PR cuts the `vX.Y.Z` tag and the
+GitHub release. A feature PR that touches a version is a bug.
+
+- The `# x-release-please-version` comment on the `version:` line of
+  `SKILL.md` is how release-please finds that line — removing it silently
+  freezes the skill's version while the other three move on.
+- **The commit type decides the release**, so pick it by what changes for
+  someone using the skill, not by the fact that the file is Markdown: `feat:`
+  for new or changed guidance (minor), `fix:` for guidance that was wrong
+  (patch), `docs:` only for repo-facing docs (`README.md`, this file), which
+  does not release on its own.
+
+After a release PR merges, confirm the four values still agree:
 
 ```sh
 grep -rn '"version"' .claude-plugin/marketplace.json \
