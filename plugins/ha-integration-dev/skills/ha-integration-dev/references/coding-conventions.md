@@ -232,8 +232,9 @@ Style: PEP 257 with the **D211 + D213** pair (which is what `ignore = ["D203", "
   LOGGER.warning("Refresh failed: %s", exception)   # correct
   LOGGER.warning(f"Refresh failed: {exception}")     # wrong
   ```
-- Levels: `debug` (poll summaries), `info` (lifecycle), `warning`
-  (recoverable), `error`/`exception` (unrecoverable).
+- Levels: `debug` (poll summaries, and every ambiguous response accepted
+  instead of raised), `info` (lifecycle), `warning` (recoverable),
+  `error`/`exception` (unrecoverable).
 - Use `LOGGER.exception("msg")` inside `except:` blocks — it logs the
   traceback automatically. Don't use `LOGGER.error(..., exc_info=True)`
   when `.exception(...)` will do.

@@ -29,10 +29,35 @@ behaviour on a running Home Assistant instance:
 
 1. Copy the changed integration into the instance's
    `config/custom_components/<domain>/`.
-2. **Restart Home Assistant.** Reloading the config entry does **not**
+2. Make sure the integration logs at `debug` on that instance (see below).
+3. **Restart Home Assistant.** Reloading the config entry does **not**
    re-import Python modules — only a restart loads new code.
-3. Confirm the change with evidence (logs, entity states, the UI), not
+4. Confirm the change with evidence (logs, entity states, the UI), not
    assumption.
+
+### Debug logging is always on for a custom integration
+
+The first time an integration is installed on a live instance, enable debug
+logging for it in `configuration.yaml`, and leave it on:
+
+```yaml
+logger:
+  logs:
+    custom_components.<domain>: debug
+```
+
+Failures against a real device or cloud API are often intermittent — a
+response that is empty for one poll, a session that silently expires. By the
+time a symptom is noticed in the entity history, the poll that caused it is
+gone; only a log that was already at `debug` holds the evidence. Use the
+`logger:` block rather than the `logger.set_level` action: the action does not
+survive a restart, and every validation of new code restarts Home Assistant.
+Add the companion SDK's logger too (`<sdk_package>: debug`) when there is one.
+
+This only pays off if the integration logs its decisions at `debug`: the poll
+summary from the coordinator, and every branch that accepts an ambiguous
+response instead of raising (an empty payload treated as "no data", a stale
+value served during an outage).
 
 For an SDK change, build and install the wheel into the instance's
 environment first — see [sdk.md](./sdk.md).

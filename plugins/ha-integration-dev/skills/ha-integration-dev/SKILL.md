@@ -147,7 +147,8 @@ local wheel validation before a release.
 
 Read `references/maintenance.md` for what happens after lint and tests pass:
 the branch-protection/PR/rebase-merge closing flow, validating on a live Home
-Assistant instance, and the paired `homeassistant` +
+Assistant instance (with the integration's debug logging always on), and the
+paired `homeassistant` +
 `pytest-homeassistant-custom-component` dependency bump.
 
 ## Lovelace custom cards
