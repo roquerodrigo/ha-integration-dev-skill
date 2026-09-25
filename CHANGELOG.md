@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.4.1...v1.5.0) (2026-09-25)
+
+
+### Features
+
+* keep debug logging on for every integration installed on a live instance ([900fe04](https://github.com/roquerodrigo/ha-integration-dev-skill/commit/900fe0460fb7399de53e6dbc8115d71ab2890c6e))
+
 ## [1.4.1](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.4.0...v1.4.1) (2026-09-18)
 
 
