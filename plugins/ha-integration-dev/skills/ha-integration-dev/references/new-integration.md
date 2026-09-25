@@ -290,6 +290,10 @@ uv run mypy custom_components/<new_domain>
 uv run pytest
 ```
 
+Then install it on a live Home Assistant instance with debug logging enabled
+for `custom_components.<new_domain>` from the very first run — see
+[Validating on a live Home Assistant](./maintenance.md#validating-on-a-live-home-assistant).
+
 ## Step 14: Set up GitHub
 
 1. Create the repo at `<your-github-org>/ha-<new-name>` (**public**).
