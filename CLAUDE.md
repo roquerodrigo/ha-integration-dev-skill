@@ -57,8 +57,10 @@ GitHub release. A feature PR that touches a version is a bug.
 - **The commit type decides the release**, so pick it by what changes for
   someone using the skill, not by the fact that the file is Markdown: `feat:`
   for new or changed guidance (minor), `fix:` for guidance that was wrong
-  (patch), `docs:` only for repo-facing docs (`README.md`, this file), which
-  does not release on its own.
+  (patch), `docs:` only for repo-facing docs (`README.md`, this file). Every
+  type in `release-please-config.json` `changelog-sections` is visible
+  (none `hidden`), so even a lone `docs:` or `ci:` commit still opens a patch
+  release PR — `v1.4.1` was cut from a single `ci:` commit.
 
 After a release PR merges, confirm the four values still agree:
 
