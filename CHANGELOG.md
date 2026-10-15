@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.5.0...v1.5.1) (2026-10-14)
+
+
+### Miscellaneous Chores
+
+* **release:** keep only user-facing changes in the changelog ([c6d47b8](https://github.com/roquerodrigo/ha-integration-dev-skill/commit/c6d47b86f29650afdd449ceec33425ccf88cac4c))
+
 ## [1.5.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.4.1...v1.5.0) (2026-09-25)
 
 
