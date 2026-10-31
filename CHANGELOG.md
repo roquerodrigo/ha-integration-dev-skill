@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.5.0...v1.5.1) (2026-10-31)
+
+Internal maintenance only, with no changes for those who use the project.
+
 ## [1.5.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.4.1...v1.5.0) (2026-09-25)
 
 
