@@ -19,6 +19,12 @@ when flagging a violation. Hard rules first, judgment-calls later.
   transport is slow/intermittent by nature (e.g. passive BLE via proxies) and
   the degradation strategy is documented — don't flag it in that case.
 - `always_update=False` whenever the payload supports `__eq__` cleanly.
+- Setup failures use the exception that matches the cause: `ConfigEntryNotReady`
+  when a retry can fix it, `ConfigEntryAuthFailed` for credentials,
+  `ConfigEntryError` when neither can (see "Setup failures" in
+  `architecture.md`). Flag a permanent condition raised as `ConfigEntryNotReady`,
+  any of the three raised from a platform's `async_setup_entry`, and a setup
+  failure that is also logged by hand.
 - A PR adding a second coordinator must justify it by **different polling
   cadence** (not per-entity or per-platform splitting), put it in its own
   `<purpose>_coordinator.py`, and surface it as a distinct field in

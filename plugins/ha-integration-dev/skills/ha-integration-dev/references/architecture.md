@@ -127,6 +127,8 @@ class <Domain>Data:
     coordinator implements an explicit, documented degradation strategy
     (grace-period / last-known-data) for a known-flaky upstream — then it may
     return the previous payload instead of raising.
+  - Rate limits → `raise UpdateFailed(retry_after=<seconds>)`; during the first
+    refresh the delay carries over to the setup retry.
 
 ### Multiple coordinators
 
@@ -234,6 +236,34 @@ integration has a third-party data source to credit** (a local-device
 integration has nothing to attribute). Member order, property-vs-`__init__`,
 the `unique_id` invariant and its push/optimistic exception, and entity
 categories are defined in [coding-conventions.md](./coding-conventions.md).
+
+## Setup failures
+
+`async_setup_entry` signals a failed setup with one of three exceptions. They
+lead to different outcomes, so pick by whether a retry or new credentials can
+fix the problem:
+
+| Exception | When | What Home Assistant does |
+| --- | --- | --- |
+| `ConfigEntryNotReady` | The device or service is offline or not ready yet | `SETUP_RETRY`, retried with a growing delay up to 10 minutes |
+| `ConfigEntryAuthFailed` | The credentials no longer work | `SETUP_ERROR`, starts the reauth flow |
+| `ConfigEntryError` | A retry will not fix it: unsupported firmware or API version, an account without the configured device, data in the entry that is no longer valid | `SETUP_ERROR`, no retry |
+
+- Conflating them is a bug: `ConfigEntryNotReady` for a permanent problem
+  retries forever, `ConfigEntryError` for an offline device never recovers
+  without a manual reload, and an auth error raised as `ConfigEntryNotReady`
+  never offers reauth.
+- Raise them from the integration's own `async_setup_entry` (or from the
+  coordinator's first refresh, which it awaits). A platform's
+  `async_setup_entry` runs too late: there Home Assistant only logs the error
+  and skips that platform.
+- `ConfigEntryNotReady` accepts `retry_after=<seconds>` when the upstream says
+  when it is back (rate limit reset, `Retry-After`).
+- Give the exception a translated message (`translation_domain=DOMAIN`,
+  `translation_key=...`, strings under `exceptions.<key>.message` in
+  `translations/en.json`) and raise it `from` the API client error. It is
+  shown on the integration page.
+- Don't log the failure yourself — Home Assistant already logs the retry.
 
 ## Exception hierarchy
 
