@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.5.1...v1.6.0) (2026-11-03)
+
+### Bug fixes
+
+- Projects set up with the skill now validate and publish with Home Assistant Autopilot, so their CI and releases no longer fail on retired workflows. ([#29](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/29))
+
 ## [1.5.1](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.5.0...v1.5.1) (2026-11-03)
 
 ### Improvements
