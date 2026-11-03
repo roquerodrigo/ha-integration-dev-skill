@@ -15,9 +15,9 @@
   - Documentation: README, `CONTRIBUTING.md`, `SECURITY.md`, every other
     Markdown doc, docstrings and code comments.
   - Git history: commit subjects and bodies, PR titles and descriptions.
-  - Releases: release notes and `CHANGELOG.md`, including the section headings
-    — translate every `section` of `changelog-sections` in
-    `release-please-config.json` (`"Features"` → `"Funcionalidades"`).
+  - Releases: release notes and `CHANGELOG.md`. Release Autopilot writes
+    them in pt-BR on its own when `hacs.json` declares `["BR"]`; for another
+    country set `language` (or `changelogs`) in `.release-autopilot.yml`.
   - Public communication: issues, issue and PR comments, review comments,
     discussions, the issue templates and the PR template under `.github/`.
   - Repository metadata: the GitHub description, and `description` in
@@ -267,15 +267,16 @@ raise <Domain>ApiClientError(
 
 ## Conventional commits
 
-All repos use Conventional Commits. Release-please parses them for version
-bumps and CHANGELOG generation.
+All repos use Conventional Commits. Release Autopilot derives the next
+version from them; whether a release opens at all depends on what the commits
+change for users, not on their type (see the notes below the table).
 
 | Type | Bump | Notes |
 |---|---|---|
 | `feat` | minor | new user-visible functionality |
 | `fix` | patch | bug fix |
 | `perf` | patch | runtime performance |
-| `deps` | patch | dependency bumps — not in the Conventional Commits spec but recognised by release-please / Dependabot |
+| `deps` | patch | dependency bumps — not in the Conventional Commits spec but used by Dependabot |
 | `refactor` | none | no behaviour change |
 | `test` | none | test-only changes |
 | `docs` | none | docs only |
@@ -287,6 +288,19 @@ bumps and CHANGELOG generation.
 Subject line: imperative mood, lowercase, no trailing period.
 Use scopes when useful: `fix(sensor): handle None battery value`.
 `BREAKING CHANGE:` footer bumps major (works with any type).
+
+- **Before `1.0.0`** a breaking change bumps the minor and a `feat` the patch.
+- **Every commit since the last tag is read** for the notes, whatever its
+  type — there are no hidden types. A release opens only when something
+  matters to users; a breaking commit always opens one. `ci`, `test`, dev
+  dependencies and lockfile-only bumps wait, unreleased, for the next relevant
+  change.
+- **A dependency that reaches users opens a release on its own** — a change
+  to `manifest.json` `requirements`, an SDK's `[project] dependencies`, or the
+  lockfile of a shipped image.
+- **An SDK bump that ships a user-facing fix is `fix(deps): bump <sdk> to
+  X.Y.Z`**, with a body naming the fix, so the type says what users get;
+  plain `deps` is for bumps with no user-visible effect.
 
 ## pyproject.toml standard
 
