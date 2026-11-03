@@ -19,10 +19,9 @@ the body, drives activation.
 ## There is nothing to build/lint/test
 
 This repo has no `package.json` and no Python project. The workflows are
-`.github/workflows/auto-assign.yml` (issue/PR triage) and
-`.github/workflows/release.yml` (release-please), both delegated to
-`roquerodrigo/workflows` — there is no build/lint/test job. "Verifying" a
-change means:
+`.github/workflows/auto-assign.yml` (issue/PR triage, delegated to
+`roquerodrigo/workflows`) and `.github/workflows/release.yml` (Release
+Autopilot) — there is no build/lint/test job. "Verifying" a change means:
 
 1. Read the edited Markdown/JSON back and check it's internally consistent
    (cross-references between `SKILL.md` and `references/*.md` still resolve,
@@ -33,7 +32,7 @@ change means:
 
 Do not go looking for a lint/test command — there isn't one.
 
-## Versioning: release-please owns it
+## Versioning: Release Autopilot owns it
 
 The plugin version is declared four times across three files and Claude Code
 does not enforce that they match:
@@ -45,22 +44,21 @@ does not enforce that they match:
   frontmatter `version`
 
 **Never edit them by hand.** `.github/workflows/release.yml` runs
-release-please on every push to `main`; it keeps a release PR open, and that
-PR bumps all four declarations (`extra-files` in
-`release-please-config.json`), `.release-please-manifest.json` and
-`CHANGELOG.md` together. Merging the release PR cuts the `vX.Y.Z` tag and the
-GitHub release. A feature PR that touches a version is a bug.
+Release Autopilot on every push to `main`; it keeps a release PR open, and that
+PR bumps all four declarations (`version_files` in `.release-autopilot.yml`)
+and `CHANGELOG.md` together. Merging the release PR cuts the `vX.Y.Z` tag and
+the GitHub release. A feature PR that touches a version is a bug.
 
-- The `# x-release-please-version` comment on the `version:` line of
-  `SKILL.md` is how release-please finds that line — removing it silently
-  freezes the skill's version while the other three move on.
-- **The commit type decides the release**, so pick it by what changes for
+- None of these files is detected on its own, so each declaration needs its
+  entry in `version_files`; the `SKILL.md` one is found by the
+  `^version: (\S+)` pattern, so keep the `version:` line in that shape.
+- **The commit type decides the version**, so pick it by what changes for
   someone using the skill, not by the fact that the file is Markdown: `feat:`
   for new or changed guidance (minor), `fix:` for guidance that was wrong
-  (patch), `docs:` only for repo-facing docs (`README.md`, this file). Every
-  type in `release-please-config.json` `changelog-sections` is visible
-  (none `hidden`), so even a lone `docs:` or `ci:` commit still opens a patch
-  release PR — `v1.4.1` was cut from a single `ci:` commit.
+  (patch), `docs:` only for repo-facing docs (`README.md`, this file). A
+  release PR only opens once the commits since the last tag hold something
+  that matters to someone using the skill; a lone `docs:` or `ci:` commit
+  waits, unreleased, until such a change lands.
 
 After a release PR merges, confirm the four values still agree:
 

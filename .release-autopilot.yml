@@ -1,0 +1,9 @@
+version_files:
+  - path: .claude-plugin/marketplace.json
+    json_path: $.metadata.version
+  - path: .claude-plugin/marketplace.json
+    json_path: $.plugins[0].version
+  - path: plugins/ha-integration-dev/.claude-plugin/plugin.json
+    json_path: $.version
+  - path: plugins/ha-integration-dev/skills/ha-integration-dev/SKILL.md
+    pattern: '^version: (\S+)'
