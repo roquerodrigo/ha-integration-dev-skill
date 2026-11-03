@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.7.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.6.0...v1.7.0) (2026-11-03)
+
+This release extends the developer guidance for Home Assistant integrations and Lovelace cards with form editors, automation triggers, setup error handling, a quality scale review and an index of official documentation.
+
+### New features
+
+- Developer guidance for Lovelace cards now covers a form editor generated from a schema, picker suggestions, and safer rendering of missing or unavailable entities. ([#31](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/31))
+- Developer guidance now covers integration-provided automation triggers and conditions built on the trigger and condition platforms, and flags legacy device automation files. ([#31](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/31))
+- Developer guidance now explains which setup exception to raise, separating retryable problems from credential and permanent errors, with retry delays and translated messages. ([#31](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/31))
+- Adds an index of official Home Assistant contributor documentation with instructions for fetching current pages instead of relying on memory. ([#31](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/31))
+- Adds a quality scale reference with the Bronze-to-Platinum rules as a review lens for integrations. ([#31](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/31))
+
+### Bug fixes
+
+- Card examples no longer include the card type in the starting configuration, which Home Assistant adds automatically. ([#31](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/31))
+
 ## [1.6.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.5.1...v1.6.0) (2026-11-03)
 
 ### Bug fixes
