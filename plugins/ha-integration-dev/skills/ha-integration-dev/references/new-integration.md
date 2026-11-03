@@ -328,14 +328,15 @@ for `custom_components.<new_domain>` from the very first run — see
 An integration may start (or stay) **private** — the flow above changes in
 three places:
 
-- **HACS validation cannot run**: the validator reads the repository through
-  the public GitHub API. Call the reusable validate workflow with
-  `hacs: false`; hassfest and the version check still run.
+- **The catalog checks cannot run**: they read the repository through the
+  public GitHub API. Home Assistant Autopilot skips them on its own for a
+  private repository and runs everything else, so `ci.yml` stays the same and
+  they start the day the repository goes public.
 - **GitHub topics are not needed** (they exist for the HACS checks).
 - **The README header carries no HACS link.** `my.home-assistant.io` resolves
   the repository through the same public GitHub API, so on a private repository
-  the button lands on something HACS cannot install — the identical reason
-  behind `hacs: false`. Keep the title, the badges and the `---` separator, and
+  the button lands on something HACS cannot install — the identical reason the
+  catalog checks are skipped. Keep the title, the badges and the `---` separator, and
   drop the "Open your Home Assistant instance" paragraph.
 - CodeQL is unavailable on private repos without GitHub Advanced Security —
   skip the `codeql.yml` workflow.

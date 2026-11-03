@@ -68,7 +68,7 @@ package.json                  # name, main: <card-name>.js, repo url
 README.md                     # badges + screenshot + usage (see below)
 LICENSE
 .github/workflows/ci.yml      # syntax check + HACS validation
-.github/workflows/release.yml # Release Autopilot + publish-hacs-plugin
+.github/workflows/release.yml # Release Autopilot + Home Assistant Autopilot
 .github/{dependabot.yml,CODEOWNERS,ISSUE_TEMPLATE/}
 ```
 
@@ -333,22 +333,26 @@ jobs:
       - run: node --check <card-name>.js
 
   validate:
-    uses: roquerodrigo/workflows/.github/workflows/home-assistant-validate.yml@main
-    with:
-      hassfest: false        # a card has no manifest.json
-      version-check: false   # nothing to compare against pyproject.toml
-      hacs-category: plugin
+    name: Home Assistant Marketplace
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: roquerodrigo/home-assistant-autopilot@latest
 ```
+
+Home Assistant Autopilot recognises a dashboard card from `hacs.json` and the
+module it names, so the same action, with no inputs, validates a card and an
+integration.
 
 The release lives in its own `release.yml`, gated on a successful CI run
 (`workflow_run` on CI completion, `push` event only) — the same shape the
-integration repos use (see `testing.md`, "CI/CD pipeline"), with the card's
-publish workflow:
+integration repos use (see `testing.md`, "CI/CD pipeline"), where the publish
+step attaches the module instead of a zip:
 
 ```yaml
 # .github/workflows/release.yml (jobs)
   release:
-    # if / runs-on / permissions / outputs as in the integration repos
+    # if / runs-on / permissions as in the integration repos
     steps:
       - id: release
         uses: roquerodrigo/release-autopilot@latest
@@ -356,21 +360,17 @@ publish workflow:
           token: ${{ secrets.RELEASE_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
 
-  publish:
-    needs: release
-    if: needs.release.outputs.released == 'true'
-    permissions:
-      contents: write
-    uses: roquerodrigo/workflows/.github/workflows/publish-hacs-plugin.yml@main
-    with:
-      filename: <card-name>.js
-      ref: ${{ needs.release.outputs.tag }}
+      - if: steps.release.outputs.released == 'true'
+        uses: roquerodrigo/home-assistant-autopilot@latest
+        with:
+          command: publish
+          tag: ${{ steps.release.outputs.tag }}
 ```
 
 `package.json` `version` is bumped by the release PR on its own — no config
 file is needed.
 
-HACS `plugin` validation runs these checks: `license`, `information`, `topics`,
+The catalog checks of a card run these: `license`, `information`, `topics`,
 `archived`, `description`, `issues`, `hacsjson`, `images`. To go green:
 
 - **`hacsjson`** — valid keys only (no `hacs` key).
@@ -420,11 +420,11 @@ document.**
   second separator to the header.
 - **A private repository gets no HACS link.** `my.home-assistant.io` resolves
   the target through the public GitHub API, so on a private repository the
-  button lands on something HACS cannot install. It is the same reason those
-  repositories run validation with `hacs: false`. Ship the title, the badges
-  and the separator, and add the link once the repository is public. Cards are
-  public by default (HACS `plugin` validation requires it), so this normally
-  only bites a card kept private while it is being built.
+  button lands on something HACS cannot install. It is the same reason the
+  catalog checks skip a private repository. Ship the title, the badges and the
+  separator, and add the link once the repository is public. Cards are public
+  by default (the Home Assistant Marketplace only lists public repositories),
+  so this normally only bites a card kept private while it is being built.
 
 Then: a **screenshot** (also satisfies the HACS `images` check), a short feature
 list, a `type: custom:my-card` usage block, and an options table. A card with a

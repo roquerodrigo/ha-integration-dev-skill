@@ -140,8 +140,8 @@ def test_no_empty_translation_values():
 
 ## CI/CD pipeline
 
-CI is composed from the **reusable workflows in `roquerodrigo/workflows`** —
-do not hand-roll the jobs in each repo. A standard integration `ci.yml` calls:
+CI is composed from the **reusable workflows in `roquerodrigo/workflows`** and
+the **Home Assistant Autopilot action** — do not hand-roll the jobs in each repo. A standard integration `ci.yml` calls:
 
 - **lint** — `roquerodrigo/workflows/.github/workflows/python-lint.yml@main`:
   `uv run ruff check`, `uv run ruff format --check`, and `uv run mypy` (the
@@ -149,12 +149,14 @@ do not hand-roll the jobs in each repo. A standard integration `ci.yml` calls:
   `pyproject.toml`, so CI and local runs check the same paths).
 - **tests** — `python-test.yml@main`: `uv run pytest`; the coverage gate lives
   in the consumer's `pyproject.toml`.
-- **validate** — `home-assistant-validate.yml@main`: hassfest + HACS
-  validation + a manifest×pyproject version check. Inputs cover the three
-  consumer shapes: `hacs: false` for a **private** repo (HACS validation reads
-  the repository through the public GitHub API), `hacs-category: plugin` for a
-  Lovelace card, and `hassfest` / `version-check` opt-outs for repos with no
-  manifest.
+- **validate** — a job named `Home Assistant Marketplace` that checks out the
+  repository and runs [Home Assistant Autopilot](https://github.com/marketplace/actions/home-assistant-autopilot)
+  (`roquerodrigo/home-assistant-autopilot@latest`), the action from the GitHub
+  Marketplace: layout, `hacs.json`, agreement of the declared versions,
+  download size, hassfest and the catalog checks of the Home Assistant
+  Marketplace. It takes **no inputs**: it reads the domain and the category
+  from the repository, and skips the catalog checks of a **private** repo,
+  which the Marketplace cannot list.
 - **update-pr-branch** — `update-pr-branch.yml@main` keeps PRs in sync with
   `main`.
 
@@ -170,9 +172,11 @@ Separate workflows in the same repo:
   the push itself (`workflow_run` on CI completion, `push` event only, so a
   green PR run cannot cut a release). The `release` job runs Release
   Autopilot, which keeps the release PR (`release/main`) up to date and, on
-  its merge, tags the version and publishes the GitHub release; `publish`
-  then ships the tag. `RELEASE_TOKEN` is a PAT — pushes made with
-  `GITHUB_TOKEN` trigger no workflows, leaving the release PR without checks.
+  its merge, tags the version and publishes the GitHub release; a second step
+  of Home Assistant Autopilot, `command: publish`, then attaches the zip that
+  `hacs.json` names, refusing a tag the manifest version disagrees with.
+  `RELEASE_TOKEN` is a PAT — pushes made with `GITHUB_TOKEN` trigger no
+  workflows, leaving the release PR without checks.
   The version files (`manifest.json`, `pyproject.toml`, `uv.lock`) are
   detected on their own; `.release-autopilot.yml` is only needed for
   anything else.
@@ -188,9 +192,6 @@ Separate workflows in the same repo:
     permissions:
       contents: write
       pull-requests: write
-    outputs:
-      released: ${{ steps.release.outputs.released }}
-      tag: ${{ steps.release.outputs.tag }}
     steps:
       - id: release
         uses: roquerodrigo/release-autopilot@latest
@@ -198,15 +199,27 @@ Separate workflows in the same repo:
           token: ${{ secrets.RELEASE_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
 
-  publish:
-    needs: release
-    if: needs.release.outputs.released == 'true'
+      - if: steps.release.outputs.released == 'true'
+        uses: roquerodrigo/home-assistant-autopilot@latest
+        with:
+          command: publish
+          tag: ${{ steps.release.outputs.tag }}
+```
+
+```yaml
+# .github/workflows/ci.yml (the validate job)
+  validate:
+    name: Home Assistant Marketplace
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
-      contents: write
-    uses: roquerodrigo/workflows/.github/workflows/publish-hacs-zip.yml@main
-    with:
-      domain: <domain>
-      ref: ${{ needs.release.outputs.tag }}
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: roquerodrigo/home-assistant-autopilot@latest
 ```
 
 ## Running tests locally
