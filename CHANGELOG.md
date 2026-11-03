@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.1](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.5.0...v1.5.1) (2026-11-03)
+
+### Improvements
+
+- Release guidance now describes Release Autopilot, including the release pull request, the required secrets and how the first version is chosen. ([#26](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/26))
+
+### Bug fixes
+
+- Projects no longer pin pytest and its plugins directly, since the Home Assistant test harness pins them, and Dependabot no longer proposes bumps that cannot resolve. ([#28](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/28))
+
 ## [1.5.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.4.1...v1.5.0) (2026-09-25)
 
 
