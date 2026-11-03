@@ -113,6 +113,16 @@ when flagging a violation. Hard rules first, judgment-calls later.
   → `@property`s → HA lifecycle coroutines (`async_added_to_hass`, ...)
   → other public methods → private methods.
 
+## Automation triggers and conditions
+
+- New triggers and conditions live on the `trigger.py` / `condition.py`
+  platforms with matching `triggers.yaml` / `conditions.yaml`, translated
+  names and descriptions, and icons. Flag any new `device_trigger.py`,
+  `device_condition.py` or `device_action.py` — device automations accept no
+  new implementations.
+- `async_attach_runner` returns its unsubscribe callback, and tests cover
+  validation, firing and removal.
+
 ## Async patterns
 
 - No blocking I/O inside a coroutine — sync SDK calls wrapped in
