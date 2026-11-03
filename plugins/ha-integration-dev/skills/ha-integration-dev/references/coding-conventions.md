@@ -311,6 +311,12 @@ them to whatever is current when you scaffold. The exact-pin rule applies to
 dependencies (`[project] dependencies`) must use `>=` floors instead — see
 `sdk.md` for why `==` there breaks installs inside Home Assistant.
 
+Do **not** list `pytest`, `pytest-asyncio` or `pytest-cov` in `dev`:
+`pytest-homeassistant-custom-component` already pins all three exactly, so a
+direct pin only duplicates the harness, and Dependabot then proposes bumps
+that can never resolve. They arrive transitively and move with the harness
+(see the paired bump in `maintenance.md`).
+
 ```toml
 [project]
 # Align with the python_requires of your homeassistant pin below.
@@ -325,9 +331,6 @@ package = false
 dev = [
     "homeassistant==<current>",
     "pre-commit==<current>",
-    "pytest==<current>",
-    "pytest-asyncio==<current>",
-    "pytest-cov==<current>",
     "pytest-homeassistant-custom-component==<current>",
 ]
 lint = [

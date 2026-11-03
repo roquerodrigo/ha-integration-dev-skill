@@ -90,6 +90,18 @@ Procedure:
    integration now relies on an API the older HA lacks — the floor is a
    user-facing compatibility promise, not a mirror of the dev pin.
 
+Because the pair moves by hand, `.github/dependabot.yml` ignores **both** in
+the `uv` ecosystem (and keeps both out of any catch-all group's
+`exclude-patterns`). Ignoring only `homeassistant` leaves Dependabot bumping
+the harness to a release built for a newer HA, which fails every run with
+`dependency_file_not_resolvable`:
+
+```yaml
+    ignore:
+      - dependency-name: "homeassistant"
+      - dependency-name: "pytest-homeassistant-custom-component"
+```
+
 Keep the pin reasonably current. The `homeassistant==` pin fixes a large set
 of transitive dependencies exactly (aiohttp, cryptography, ...), so a stale
 pin blocks Dependabot security updates across the whole lock — the
