@@ -16,7 +16,7 @@ description: >-
   asks to create or change a custom card, its `ha-form` visual editor,
   `window.customCards` registration, card i18n, or the card's HACS/CI/release
   flow.
-version: 1.5.1
+version: 1.6.0
 ---
 
 # Home Assistant Integration Development
