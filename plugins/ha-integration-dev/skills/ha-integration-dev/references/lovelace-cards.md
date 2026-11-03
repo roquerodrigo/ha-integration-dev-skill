@@ -164,17 +164,44 @@ window.customCards.push({
   description: "What it shows.",
   preview: true,
   documentationURL: "https://github.com/<owner>/ha-<card-name>",
+  getEntitySuggestion: (hass, entityId) =>
+    entityId.startsWith("sensor.") &&
+    hass.states[entityId]?.attributes.device_class === "battery"
+      ? { config: { type: "custom:my-card", entity: entityId } }
+      : null,
 });
 ```
 
 Rules:
 
+- **Suggest the card only where it fits.** `getEntitySuggestion` on the
+  `window.customCards` entry puts the card among the suggestions when the user
+  picks an entity in the card picker. Check the domain, device class or
+  supported features and return `null` otherwise — a card suggested for every
+  entity clutters the picker for everyone. Return a list with a `label` per
+  item for several variants. Drop the key for a card that doesn't revolve
+  around one entity.
 - **`getStubConfig()` returns the config without `type`** — Home Assistant
   adds it. It receives `(hass, entities, entitiesFallback)`: the entities not
   yet on the dashboard and the ones that are, both without unavailable or
   unknown entities, so either list can be empty. A card that needs an entity
   picks one from them and keeps a fallback (`sun.sun`). Without the method the
   card starts with only its type.
+- **A missing or unavailable entity never breaks the card.** `hass.states[id]`
+  is `undefined` for a deleted or renamed entity, and its `state` can be
+  `unavailable` or `unknown`. Guard every lookup and render a clear "not
+  found" / unavailable row instead of throwing during render — a thrown error
+  replaces the whole card with an error card. Throw only from `setConfig`, for
+  config that is invalid in itself.
+- **No module-level mutable state.** A dashboard can hold several instances of
+  the same card; config, entity state, caches and timers live on the instance
+  (`this._...`), never in a variable shared by the module.
+- **Format through `hass`, not by hand.** `hass.formatEntityState(stateObj)`
+  gives the translated state with its unit, `hass.formatEntityAttributeValue`
+  and `hass.formatEntityAttributeName` do the same for attributes, and
+  `hass.formatEntityName(stateObj, config.name)` resolves the name the user
+  picked with the `entity_name` selector. They follow the user's language,
+  number format and units.
 - **Style with HA design tokens, never hardcoded colors.** Render inside
   `<ha-card>` and use CSS custom properties — `var(--primary-text-color)`,
   `var(--divider-color)`, `var(--error-color)`, `var(--warning-color)`,
@@ -199,7 +226,59 @@ Rules:
   Only trusted, card-owned fragments (your own `<style>` block, icon names
   you validated) may skip it.
 
-## Visual editor (`ha-form`)
+## Visual editor
+
+### Form editor (`getConfigForm`)
+
+When every option maps to a selector, return a schema from the static
+`getConfigForm()` and Home Assistant renders the form with the same controls
+as the built-in cards — no editor element and no `config-changed` plumbing:
+
+```js
+static getConfigForm() {
+  return {
+    schema: [
+      { name: "entity", required: true, selector: { entity: { domain: "sensor" } } },
+      { name: "name", selector: { entity_name: {} }, context: { entity: "entity" } },
+      {
+        type: "grid",
+        name: "",
+        schema: [
+          { name: "icon", selector: { icon: {} }, context: { icon_entity: "entity" } },
+          { name: "threshold", selector: { number: { min: 0, max: 100, mode: "box" } } },
+        ],
+      },
+    ],
+    computeLabel: (schema) => (schema.name === "threshold" ? "Low battery threshold" : undefined),
+    assertConfig: (config) => {
+      if (config.entities) throw new Error("entities is YAML-only");
+    },
+  };
+}
+```
+
+- `computeLabel` returning `undefined` keeps Home Assistant's own label for
+  common names like `entity` and `icon`.
+- `context` links a field to another one (the icon or name preview of the
+  picked entity); `visible: { field, value }` shows a field conditionally.
+- `type: "grid"` and `type: "expandable"` group fields. With an empty `name`
+  (or `flatten: true`) their values stay at the top level of the config;
+  otherwise they nest under that name.
+- `assertConfig` runs on every change; throwing switches the dashboard to the
+  YAML editor until the config is representable again. Use it for shapes the
+  form can't show, not for ordinary validation.
+- `computeLabel` and `computeHelper` receive the frontend's `localize`, which
+  knows Home Assistant's strings but not the card's own dictionaries, and the
+  form gets no `hass` to resolve the language. Labels for common names
+  (`entity`, `name`, `icon`, `theme`) already follow the user's language; when
+  the card's own labels must too (see "Internationalization"), write a custom
+  editor element.
+
+When a card defines both methods, `getConfigElement()` wins. Prefer the form
+for a card whose options are all selectors; write a custom editor element for
+localized labels, dynamic lists, previews or custom controls.
+
+### Custom editor element (`getConfigElement`)
 
 The editor is its own custom element. Build an `ha-form` schema, set
 `computeLabel`, and dispatch `config-changed`:

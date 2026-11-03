@@ -166,7 +166,8 @@ paired `homeassistant` +
 Read `references/lovelace-cards.md` when the deliverable is a **frontend custom
 card** rather than a Python integration — a zero-build web component shipped as
 a HACS plugin/dashboard resource. It covers card-vs-integration, repo layout,
-the web-component contract (`setConfig`/`set hass`/`getConfigElement`/
-`customCards`), the `ha-form` visual editor, internationalization, manual vs.
+the web-component contract (`setConfig`/`set hass`/`getStubConfig`/
+`customCards`), the visual editor (`getConfigForm` or a custom `ha-form`
+element), picker suggestions, internationalization, manual vs.
 HACS install, and the CI/release flow. The Python conventions and testing
 sections above do **not** apply to cards.
