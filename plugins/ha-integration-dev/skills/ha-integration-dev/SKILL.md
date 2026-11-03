@@ -135,7 +135,9 @@ coverage gates, and CI/CD pipeline.
 ## Code review
 
 Read `references/code-review.md` for the per-area checklist to use when
-reviewing a PR against a repo that follows these conventions.
+reviewing a PR against a repo that follows these conventions, and
+`references/quality-scale.md` for Home Assistant's Bronze-to-Platinum quality
+rules — a review lens, and the scope when the user asks for a tier.
 
 ## Creating a new integration
 

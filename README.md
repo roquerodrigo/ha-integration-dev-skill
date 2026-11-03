@@ -23,6 +23,8 @@ SDK, or a Lovelace custom card. The skill bundles:
 - **Testing patterns** — test layout, coverage gates, `conftest.py` pattern,
   mocking strategy, translation parity tests, CI/CD jobs.
 - **Code review checklist** — per-area checklist for PR review.
+- **Quality scale** — Home Assistant's Bronze-to-Platinum rules, adapted to
+  custom integrations, as a review lens.
 - **New integration scaffolding** — step-by-step checklist to fork a
   blueprint into a fresh integration, public or private.
 - **Companion SDKs** — `src/` layout, the runtime-dependency policy
@@ -86,6 +88,7 @@ plugins/ha-integration-dev/
         ├── coding-conventions.md
         ├── testing.md
         ├── code-review.md
+        ├── quality-scale.md
         ├── new-integration.md
         ├── sdk.md
         ├── maintenance.md
