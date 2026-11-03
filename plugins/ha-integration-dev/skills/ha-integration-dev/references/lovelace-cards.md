@@ -113,8 +113,8 @@ class MyCard extends HTMLElement {
   // Return the editor element (see "Visual editor").
   static getConfigElement() { return document.createElement("my-card-editor"); }
 
-  // Default config used when the user adds the card from the picker.
-  static getStubConfig() { return { type: "custom:my-card" }; }
+  // Starting config when the user adds the card from the picker — no `type`.
+  static getStubConfig() { return { threshold: 20 }; }
 
   // Validate + store. Throw on bad input. Must be cheap and idempotent.
   setConfig(config) {
@@ -169,6 +169,12 @@ window.customCards.push({
 
 Rules:
 
+- **`getStubConfig()` returns the config without `type`** — Home Assistant
+  adds it. It receives `(hass, entities, entitiesFallback)`: the entities not
+  yet on the dashboard and the ones that are, both without unavailable or
+  unknown entities, so either list can be empty. A card that needs an entity
+  picks one from them and keeps a fallback (`sun.sun`). Without the method the
+  card starts with only its type.
 - **Style with HA design tokens, never hardcoded colors.** Render inside
   `<ha-card>` and use CSS custom properties — `var(--primary-text-color)`,
   `var(--divider-color)`, `var(--error-color)`, `var(--warning-color)`,
