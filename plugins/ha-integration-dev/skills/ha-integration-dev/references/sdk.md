@@ -20,8 +20,6 @@ tests/                       # network-free by default; hardware/network
 pyproject.toml               # hatchling build backend
 LICENSE                      # must exist — publishing "MIT" metadata without
                              #   the license text is a distribution bug
-release-please-config.json
-.release-please-manifest.json
 .github/workflows/           # same shared reusables as the integrations
 ```
 
@@ -77,27 +75,34 @@ def test_manifest_sdk_pin_matches_dev_group() -> None:
 
 ## Release and publish flow
 
-The `release.yml` composes three shared reusables, gated on a successful CI
-run (`workflow_run`, `push` event only):
+The `release.yml` has two jobs, gated on a successful CI run
+(`workflow_run`, `push` event only):
 
-1. **`release-please.yml@main`** grooms the release PR and tags the version
-   on merge (`release-token: ${{ secrets.RELEASE_PLEASE_PAT }}`).
-2. **`sync-uv-lock.yml@main`** refreshes `uv.lock` on the release branch so
-   the lock lands carrying the released version.
-3. **`publish-pypi.yml@main`** builds and publishes the tag to PyPI
-   (`package:` name, `pypi-token: ${{ secrets.PYPI_API_TOKEN }}`); a
-   `workflow_dispatch` input allows republishing an existing tag.
+1. **`release`** runs `roquerodrigo/release-autopilot@latest` with the
+   `RELEASE_TOKEN` and `ANTHROPIC_API_KEY` secrets. It keeps the release PR
+   up to date — `pyproject.toml` `project.version` and the project's
+   `uv.lock` entry are bumped on their own, no config file needed — and on
+   merge tags the version, exposing the `released` and `tag` outputs.
+2. **`publish`** (`if: needs.release.outputs.released == 'true'`) calls
+   `roquerodrigo/workflows/.github/workflows/publish-pypi.yml@main` to build
+   and publish `needs.release.outputs.tag` to PyPI (`package:` name,
+   `pypi-token: ${{ secrets.PYPI_API_TOKEN }}`); a `workflow_dispatch` input
+   allows republishing an existing tag.
 
 ## SDK fix → integration bump
 
 A fix that must reach Home Assistant travels in three steps, in order:
 
-1. **PR on the SDK** (fix + tests), merge, let release-please cut the release
-   and publish to PyPI.
+1. **PR on the SDK** (fix + tests), merge, then merge the SDK's release PR
+   so the tag is cut and published to PyPI.
 2. **Bump PR on the integration**: update the `==` pin in `manifest.json`
    `requirements` *and* the dev-group pin in `pyproject.toml` (the parity test
    above keeps them honest), plus any code change the new SDK version needs.
-3. Merge the bump PR; the integration's own release follows.
+   Commit it as `fix(deps): bump <sdk> to X.Y.Z` with a body naming the
+   user-visible fix, so the type and the notes say what users get.
+3. Merge the bump PR. A change to `manifest.json` `requirements` reaches
+   users, so it opens the integration's release PR on its own; merge that to
+   ship the fix.
 
 ## Validate with a local wheel before releasing
 

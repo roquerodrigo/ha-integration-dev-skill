@@ -276,4 +276,5 @@ Sensitive keys go into `TO_REDACT: frozenset[str]`.
     If asking is impossible, follow the autonomous fallback in
     [new-integration.md](./new-integration.md) — tracked TODO, prominent flag,
     release blocker.
-- Release-please tags releases on merge to main.
+- Release Autopilot keeps a release PR open on `main`; merging it tags the
+  version and publishes the GitHub release.

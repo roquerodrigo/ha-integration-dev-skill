@@ -67,9 +67,8 @@ hacs.json                     # HACS manifest (see below)
 package.json                  # name, main: <card-name>.js, repo url
 README.md                     # badges + screenshot + usage (see below)
 LICENSE
-release-please-config.json
-.release-please-manifest.json
-.github/workflows/ci.yml      # HACS validation + release-please
+.github/workflows/ci.yml      # syntax check + HACS validation
+.github/workflows/release.yml # Release Autopilot + publish-hacs-plugin
 .github/{dependabot.yml,CODEOWNERS,ISSUE_TEMPLATE/}
 ```
 
@@ -342,10 +341,34 @@ jobs:
 ```
 
 The release lives in its own `release.yml`, gated on a successful CI run
-(`workflow_run` on CI completion, `push` event only) and calling
-`roquerodrigo/workflows/.github/workflows/release-please.yml@main` with
-`release-token: ${{ secrets.RELEASE_PLEASE_PAT }}` — the same shape the
-integration repos use (see `testing.md`, "CI/CD pipeline").
+(`workflow_run` on CI completion, `push` event only) — the same shape the
+integration repos use (see `testing.md`, "CI/CD pipeline"), with the card's
+publish workflow:
+
+```yaml
+# .github/workflows/release.yml (jobs)
+  release:
+    # if / runs-on / permissions / outputs as in the integration repos
+    steps:
+      - id: release
+        uses: roquerodrigo/release-autopilot@latest
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  publish:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      contents: write
+    uses: roquerodrigo/workflows/.github/workflows/publish-hacs-plugin.yml@main
+    with:
+      filename: <card-name>.js
+      ref: ${{ needs.release.outputs.tag }}
+```
+
+`package.json` `version` is bumped by the release PR on its own — no config
+file is needed.
 
 HACS `plugin` validation runs these checks: `license`, `information`, `topics`,
 `archived`, `description`, `issues`, `hacsjson`, `images`. To go green:
@@ -357,13 +380,12 @@ HACS `plugin` validation runs these checks: `license`, `information`, `topics`,
   screenshot** to `assets/` and reference it. Prefer a genuine screenshot over
   the `ignore: images` action input; `ignore` is a last resort for a card that
   is manual-install only and will never be in the HACS store.
-- **release-please** needs GitHub Actions permitted to open PRs. Either enable
-  it once —
+- **Release Autopilot** needs the `RELEASE_TOKEN` (a PAT with contents and
+  pull-requests write) and `ANTHROPIC_API_KEY` secrets. The default
+  `GITHUB_TOKEN` only works once GitHub Actions may open PRs —
   `gh api --method PUT repos/<owner>/ha-<card-name>/actions/permissions/workflow -F default_workflow_permissions=write -F can_approve_pull_request_reviews=true`
-  — or supply a PAT. Without it the release job fails with *"GitHub Actions is
-  not permitted to create or approve pull requests."* Prefer the
-  `RELEASE_PLEASE_PAT` secret anyway: release PRs opened with the default
-  `GITHUB_TOKEN` trigger no workflows and sit with stale checks.
+  — and even then its release PRs trigger no workflows and sit without
+  checks, so prefer the PAT.
 
 Repo setup: **public**, topics added, description set, issues enabled.
 

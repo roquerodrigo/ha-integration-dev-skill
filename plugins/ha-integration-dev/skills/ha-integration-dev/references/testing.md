@@ -168,10 +168,46 @@ Separate workflows in the same repo:
 - **auto-assign** — `auto-assign.yml@main`, assigns issues/PRs to the owner.
 - **release** (`release.yml`) — gated on a **successful CI run** rather than on
   the push itself (`workflow_run` on CI completion, `push` event only, so a
-  green PR run cannot cut a release), calling `release-please.yml@main` with
-  `release-token: ${{ secrets.RELEASE_PLEASE_PAT }}`. The reusable falls back
-  to `GITHUB_TOKEN` when the secret is unset — but pushes made with that token
-  trigger no workflows, leaving the release PR with stale checks.
+  green PR run cannot cut a release). The `release` job runs Release
+  Autopilot, which keeps the release PR (`release/main`) up to date and, on
+  its merge, tags the version and publishes the GitHub release; `publish`
+  then ships the tag. `RELEASE_TOKEN` is a PAT — pushes made with
+  `GITHUB_TOKEN` trigger no workflows, leaving the release PR without checks.
+  The version files (`manifest.json`, `pyproject.toml`, `uv.lock`) are
+  detected on their own; `.release-autopilot.yml` is only needed for
+  anything else.
+
+```yaml
+# .github/workflows/release.yml (jobs)
+  release:
+    if: >-
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - id: release
+        uses: roquerodrigo/release-autopilot@latest
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+  publish:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      contents: write
+    uses: roquerodrigo/workflows/.github/workflows/publish-hacs-zip.yml@main
+    with:
+      domain: <domain>
+      ref: ${{ needs.release.outputs.tag }}
+```
 
 ## Running tests locally
 

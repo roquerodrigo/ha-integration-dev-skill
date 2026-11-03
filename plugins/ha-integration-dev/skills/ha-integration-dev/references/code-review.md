@@ -212,8 +212,9 @@ when flagging a violation. Hard rules first, judgment-calls later.
 
 ## Manifest & release metadata
 
-- `manifest.json` `version` bumped per SemVer when behaviour changes
-  (release-please usually handles this from the commit message).
+- `manifest.json` `version` is **not** bumped in a feature PR — the release
+  PR writes it, with the version derived from the Conventional Commit types,
+  so the commit type must match the change (`feat` / `fix` / `!`).
 - `codeowners` still accurate.
 - `hacs.json` `homeassistant` minimum reflects any new HA API usage.
 - `hacs.json` `country` matches reality: present (ISO 3166-1 alpha-2) when the

@@ -24,9 +24,12 @@ git init
 These files carry state from the blueprint's release history and must be
 reset — the global rename in Step 3 will not fix them:
 
-- **`.release-please-manifest.json`** — set version to `"0.0.0"`.
 - **`CHANGELOG.md`** — empty the file (keep only the `# Changelog` heading).
-  The first release-please PR will populate it.
+  The first release PR will populate it.
+- **First version** — there is no release manifest to reset: the version
+  comes from the `vX.Y.Z` tags, and a fresh repository has none, so the first
+  release is `1.0.0`. To start pre-1.0, add `.release-autopilot.yml` with
+  `initial_version: 0.1.0`.
 - **`README.md`** — rewrite from scratch for the new integration. The
   blueprint's README describes setup steps, entity tables, and architecture
   specific to the blueprint; none of that applies. At minimum include: what
@@ -183,9 +186,11 @@ feed):
   comments, commits, PRs, changelog, issue/PR templates and every public reply
   are written in that country's language, code stays English, and native
   domain terms are never translated — see "Language" in
-  `coding-conventions.md`. Translate the forked `.github/` templates, the
-  `changelog-sections` headings and the README at fork time, before the first
-  commit.
+  `coding-conventions.md`. Translate the forked `.github/` templates and the
+  README at fork time, before the first commit. Release notes and
+  `CHANGELOG.md` follow on their own: Release Autopilot writes them in pt-BR
+  for `["BR"]` (set `language` in `.release-autopilot.yml` for any other
+  country).
 
 ## Step 6: Update pyproject.toml
 
@@ -299,23 +304,24 @@ for `custom_components.<new_domain>` from the very first run — see
 1. Create the repo at `<your-github-org>/ha-<new-name>` (**public**).
 2. Add GitHub topics — at minimum `home-assistant` and `hacs` (HACS
    validation will fail without valid topics).
-3. Add the `RELEASE_PLEASE_PAT` repo secret — `release.yml` passes it to the
-   reusable `release-please.yml` as `release-token`, which **falls back to the
-   default `GITHUB_TOKEN`** when unset. The failure mode without the PAT is
-   subtle, not a hard error: pushes made with `GITHUB_TOKEN` do not trigger
-   workflows, so the release PR opens with **stale/missing checks** and branch
-   protection blocks its merge.
-   `gh secret set RELEASE_PLEASE_PAT --repo <org>/ha-<new-name> --body "$RELEASE_PLEASE_PAT"`
-   Verify the value landed **non-empty**: `gh secret set` accepts an empty
-   string and still reports success. If reading the PAT from a `.env`, grep
-   the single line (`grep '^RELEASE_PLEASE_PAT=' .env | cut -d= -f2-`) instead
-   of sourcing the whole file (a `. .env` can silently set the var empty),
-   then confirm with `gh secret list`.
+3. Add the two secrets `release.yml` passes to Release Autopilot:
+   `RELEASE_TOKEN` (a PAT with contents and pull-requests write) and
+   `ANTHROPIC_API_KEY` (writes the release notes). Use a PAT rather than the
+   default `GITHUB_TOKEN`: pushes made with `GITHUB_TOKEN` do not trigger
+   workflows, so the release PR would open with **no checks** and branch
+   protection would block its merge.
+   `gh secret set RELEASE_TOKEN --repo <org>/ha-<new-name> --body "$RELEASE_TOKEN"`
+   Verify each value landed **non-empty**: `gh secret set` accepts an empty
+   string and still reports success. If reading a token from a `.env`, grep
+   the single line (`grep '^<NAME>=' .env | cut -d= -f2-`) instead of sourcing
+   the whole file (a `. .env` can silently set the var empty), then confirm
+   with `gh secret list`.
 4. Push the initial commit.
 5. Add branch protection on `main` requiring CI green.
 6. `.github/workflows/ci.yml` is already in the blueprint.
 7. Enable Dependabot.
-8. Create the first release via release-please.
+8. Cut the first release by merging the release PR Release Autopilot opens
+   after the first user-facing commit lands on `main`.
 
 ### Private repository variant
 
@@ -334,7 +340,8 @@ three places:
 - CodeQL is unavailable on private repos without GitHub Advanced Security —
   skip the `codeql.yml` workflow.
 
-Everything else stays: branch protection, PRs, release-please, Dependabot.
+Everything else stays: branch protection, PRs, Release Autopilot,
+Dependabot.
 Leave a tracked note (README or issue) to flip `hacs: true`, add the topics,
 restore the HACS link in the README header, and add CodeQL when the repo goes
 public — publishing with validation still disabled is a release blocker.

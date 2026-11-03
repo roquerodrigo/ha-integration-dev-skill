@@ -14,11 +14,19 @@ through pull requests:
   never loosen branch protection to rush a fix through.
 - **Merges are rebase-merges only** (merge commits and squash are disabled).
   Keep each commit a valid Conventional Commit: after a rebase-merge the
-  individual commits land on `main` as-is, and release-please reads them one
-  by one.
+  individual commits land on `main` as-is, and Release Autopilot reads them
+  one by one.
 - **Opening the PR is where autonomous work stops.** Merging and releasing
   are the maintainer's call — leave the PR open for review instead of
   self-merging, unless explicitly told otherwise.
+- **Releasing is merging the release PR.** After each green CI run on
+  `main`, Release Autopilot refreshes the release PR (branch `release/main`)
+  with the next version, the version files, `CHANGELOG.md` and the notes;
+  merging it tags `vX.Y.Z`, publishes the GitHub release with the reviewed
+  text, and the `publish` job ships the tag. No release PR after a merge
+  means nothing user-facing landed yet, or the release run failed — check the
+  run before assuming the former. Before merging, check that the notes list
+  every user-facing change; edits to the PR body carry into the release.
 - PR titles and descriptions are formal and describe the change and its
   motivation — not the process that produced it.
 
