@@ -23,6 +23,8 @@ custom_components/<domain>/
 ├── options_flow.py          # *conditional — only when there are user-tunable options
 ├── diagnostics.py           # *conditional — add when the entry holds data worth dumping/redacting
 ├── repairs.py               # *conditional — only when registering repair issues
+├── trigger.py, triggers.yaml      # *conditional — integration-provided automation triggers
+├── condition.py, conditions.yaml  # *conditional — integration-provided automation conditions
 ├── icons.json               # _optional — custom MDI icons per entity
 ├── manifest.json            # required
 ├── exceptions/              # *conditional — central exception package:
@@ -190,6 +192,34 @@ device_id). Aborts on duplicate.
 One class per file (`options_flow.py`). Changes trigger
 `async_reload_entry()` so the coordinator re-instantiates with new
 `update_interval`.
+
+## Automation triggers and conditions
+
+When the integration offers its own automation triggers ("button pressed",
+"fuel became low") or conditions, build them on the trigger and condition
+platforms:
+
+- `trigger.py` defines `Trigger` subclasses from
+  `homeassistant.helpers.trigger` and returns them from `async_get_triggers`,
+  keyed relative to the domain (`button_pressed` → `<domain>.button_pressed`).
+  `async_attach_runner` returns the callback that stops listening.
+- `condition.py` does the same with `async_get_conditions`.
+- `triggers.yaml` / `conditions.yaml` describe the `target` and `fields` for
+  the automation editor, like `services.yaml` does for actions.
+- Names and descriptions go in `translations/en.json` under `triggers` /
+  `conditions`; each gets an icon in `icons.json`.
+
+**Never add a `device_trigger.py`, `device_condition.py` or
+`device_action.py`.** Device automations are a legacy mechanism that no longer
+accepts new implementations; a per-device trigger is a trigger with a
+`device_id` option on the trigger platform. Existing device automations stay
+until they are migrated deliberately.
+
+The trigger API is young and still changes between releases. Before building
+on it, fetch `core/integrations/triggers-and-conditions/index.md` (see
+[upstream-docs.md](./upstream-docs.md)), read a current implementation in core
+(`light`, `moon`, `fumis`), and check that the helpers exist in the repo's
+minimum Home Assistant version.
 
 ## Entity design
 
