@@ -30,6 +30,9 @@ SDK, or a Lovelace custom card. The skill bundles:
   parity rule.
 - **Maintenance** — dependency upkeep (paired Home Assistant bumps),
   validating on a live instance, and the PR/rebase-merge closing flow.
+- **Official docs index** — where each Home Assistant API is documented on
+  `contributors.home-assistant.io`, and how to fetch the current page as
+  Markdown instead of relying on remembered signatures.
 - **Lovelace custom cards** — the full frontend-card flow: card-vs-integration,
   repo layout, the web-component contract, the `ha-form` visual editor,
   internationalization, manual vs. HACS install, and CI/release. (Not Python —
@@ -86,7 +89,8 @@ plugins/ha-integration-dev/
         ├── new-integration.md
         ├── sdk.md
         ├── maintenance.md
-        └── lovelace-cards.md
+        ├── lovelace-cards.md
+        └── upstream-docs.md
 ```
 
 ## Support

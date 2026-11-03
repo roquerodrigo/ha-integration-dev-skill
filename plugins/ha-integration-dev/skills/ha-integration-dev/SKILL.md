@@ -109,6 +109,14 @@ release that ships another project's artwork is a bug, not a shortcut.
 
 ---
 
+## Official docs
+
+Read `references/upstream-docs.md` before using a Home Assistant API that the
+repo's guide and this skill do not already settle — a new platform, flow step,
+helper, or card API. It maps each topic to the current page on
+`contributors.home-assistant.io` and explains how to fetch it as Markdown, so
+signatures come from the docs instead of memory.
+
 ## Architecture
 
 Read `references/architecture.md` for the full data-flow, coordinator, config
