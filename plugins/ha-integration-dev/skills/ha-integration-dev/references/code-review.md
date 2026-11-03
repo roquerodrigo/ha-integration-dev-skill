@@ -226,6 +226,15 @@ when flagging a violation. Hard rules first, judgment-calls later.
   English, and native domain terms are left untranslated ("Language" in
   `coding-conventions.md`). Write the review itself in that language too.
 
+## Quality scale
+
+- After the per-area checks, run the change through the quality scale rules in
+  [quality-scale.md](./quality-scale.md) and list the rules it misses with
+  their tier. Gaps outside the scope of the change are a note for the
+  maintainer, not a blocker; a rule the change itself breaks (a new platform
+  without `PARALLEL_UPDATES`, a new user-facing error without a translation)
+  is a finding.
+
 ## Commit message
 
 - Conventional Commits format: `feat`/`fix`/`perf`/`refactor`/...
