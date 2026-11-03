@@ -36,7 +36,8 @@ SDK, or a Lovelace custom card. The skill bundles:
   `contributors.home-assistant.io`, and how to fetch the current page as
   Markdown instead of relying on remembered signatures.
 - **Lovelace custom cards** — the full frontend-card flow: card-vs-integration,
-  repo layout, the web-component contract, the `ha-form` visual editor,
+  repo layout, the web-component contract, the visual editor
+  (`getConfigForm` or a custom `ha-form` element), picker suggestions,
   internationalization, manual vs. HACS install, and CI/release. (Not Python —
   cards have their own verification.)
 
