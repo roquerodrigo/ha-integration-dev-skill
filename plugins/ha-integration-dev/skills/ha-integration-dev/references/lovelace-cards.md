@@ -69,7 +69,7 @@ README.md                     # badges + screenshot + usage (see below)
 LICENSE
 .github/workflows/ci.yml      # syntax check + HACS validation
 .github/workflows/release.yml # Release Autopilot + Home Assistant Autopilot
-.github/{dependabot.yml,CODEOWNERS,ISSUE_TEMPLATE/}
+.github/{dependabot.yml,ISSUE_TEMPLATE/}
 ```
 
 ## hacs.json
