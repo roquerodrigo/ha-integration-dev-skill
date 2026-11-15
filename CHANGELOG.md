@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.1](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.7.0...v1.7.1) (2026-11-15)
+
+### Improvements
+
+- The Lovelace card project layout in the integration development skill no longer includes a CODEOWNERS file, so it no longer requests the maintainer's review on every pull request. ([#33](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/33))
+
 ## [1.7.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.6.0...v1.7.0) (2026-11-03)
 
 This release extends the developer guidance for Home Assistant integrations and Lovelace cards with form editors, automation triggers, setup error handling, a quality scale review and an index of official documentation.
