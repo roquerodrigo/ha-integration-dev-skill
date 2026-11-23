@@ -89,7 +89,8 @@ grep -n '^version:' plugins/ha-integration-dev/skills/ha-integration-dev/SKILL.m
 
 This is a **public** GitHub repo (`roquerodrigo/ha-integration-dev-skill`)
 with feature branches and PRs for every change (see `git log` — commits are
-Conventional Commits, PRs referenced as `(#1)`, `(#2)`, …) — this follows the
+Conventional Commits; with rebase merging the subjects carry no `(#N)` PR
+number, so don't add one) — this follows the
 global public-repo convention (branch + PR, never push straight to `main`,
 rebase merge only — merge commits and squash are disabled). Update `main`
 locally before branching for a new feature.
