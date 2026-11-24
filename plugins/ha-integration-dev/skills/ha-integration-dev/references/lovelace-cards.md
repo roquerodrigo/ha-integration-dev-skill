@@ -76,14 +76,14 @@ LICENSE
 
 Only these keys are valid: `name` (**required**), `content_in_root`,
 `filename`, `country`, `homeassistant`, `persistent_directory`,
-`render_readme`, `zip_release`, `hide_default_branch`.
+`zip_release`, `hide_default_branch`. The Marketplace always shows the README
+and no longer reads `render_readme`, so leave it out.
 
 ```json
 {
   "name": "<Card Name>",
   "filename": "<card-name>.js",
   "content_in_root": true,
-  "render_readme": true,
   "homeassistant": "2026.5.0"
 }
 ```
@@ -476,45 +476,13 @@ Repo setup: **public**, topics added, description set, issues enabled.
 
 ## README essentials
 
-The header is the same one the sibling integration repos use, in this exact
-order: **title → badges → HACS link → `---` separator → the rest of the
-document.**
-
-```markdown
-# <Card Name>
-
-[![CI](https://github.com/<owner>/ha-<card-name>/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/ha-<card-name>/actions/workflows/ci.yml)
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
-
-[![Open your Home Assistant instance and open the repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=<owner>&repository=ha-<card-name>&category=plugin)
-
----
-```
-
-- **`category=plugin`, not `integration`** — HACS distributes a card as a
-  dashboard resource, so `category=integration` sends the button looking for a
-  `custom_components/` payload this repository does not have.
-- `repository=` is the repository name and `owner=` its GitHub owner.
-- The HACS link is a paragraph of its own, separated from the badge block by a
-  blank line — the badge row and the "Open your Home Assistant instance" button
-  are different things and must not run together.
-- Preserve whatever badges the repository already carries and invent no new
-  ones; all of them belong **before** the HACS link.
-- The `---` right after the HACS link is the header separator. A README that
-  already uses `---` further down keeps those as section breaks — do not add a
-  second separator to the header.
-- **A private repository gets no HACS link.** `my.home-assistant.io` resolves
-  the target through the public GitHub API, so on a private repository the
-  button lands on something HACS cannot install. It is the same reason the
-  catalog checks skip a private repository. Ship the title, the badges and the
-  separator, and add the link once the repository is public. Cards are public
-  by default (the Home Assistant Marketplace only lists public repositories),
-  so this normally only bites a card kept private while it is being built.
-
-Then: a **screenshot** (also satisfies the HACS `images` check), a short feature
-list, a `type: custom:my-card` usage block, and an options table. A card with a
-visual editor should still document YAML — the editor is a convenience, not the
-spec.
+Follow [documentation.md](./documentation.md), card variant: `category=plugin`
+in the open in Home Assistant button (`category=integration` sends it looking
+for a `custom_components/` payload this repository does not have), **Usage**
+and **Options** instead of Configuration and Entities, and a real
+**screenshot** near the top, which also satisfies the catalog `images` check.
+A card with a visual editor still documents its YAML options: the editor is a
+convenience, not the spec. A private card gets no button until it is public.
 
 ## Verification (no pytest here)
 
