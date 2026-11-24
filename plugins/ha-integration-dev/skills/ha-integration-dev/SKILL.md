@@ -144,6 +144,12 @@ rules — a review lens, and the scope when the user asks for a tier.
 Read `references/new-integration.md` for the step-by-step checklist to fork a
 blueprint into a new integration (including the private-repository variant).
 
+## Documentation
+
+Read `references/documentation.md` before writing or reviewing a README,
+`CONTRIBUTING.md` or the repository description and topics: the Marketplace
+exclusion markers, the section order, the header and the writing rules.
+
 ## Companion SDKs
 
 Read `references/sdk.md` when the repo is (or the task touches) a companion
