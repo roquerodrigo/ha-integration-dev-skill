@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.8.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.7.1...v1.8.0) (2026-11-24)
+
+### New features
+
+- The skill now includes a documentation guide for READMEs that work on both GitHub and the Home Assistant Marketplace, covering exclusion markers, section order, header, writing rules, and repository description and topics. ([#37](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/37))
+
+### Improvements
+
+- The new integration and Lovelace card guides now follow the shared documentation guide for the README header, replacing the old HACS badge and separator layout. ([#37](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/37))
+- The card guide no longer lists render_readme as a valid hacs.json key, since the Marketplace always shows the README and no longer reads it. ([#37](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/37))
+
 ## [1.7.1](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.7.0...v1.7.1) (2026-11-15)
 
 ### Improvements
