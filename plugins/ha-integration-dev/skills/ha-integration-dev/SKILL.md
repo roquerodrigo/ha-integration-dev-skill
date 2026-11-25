@@ -147,8 +147,9 @@ blueprint into a new integration (including the private-repository variant).
 ## Documentation
 
 Read `references/documentation.md` before writing or reviewing a README,
-`CONTRIBUTING.md` or the repository description and topics: the Marketplace
-exclusion markers, the section order, the header and the writing rules.
+`CONTRIBUTING.md` or the repository description and topics, or before taking
+a screenshot for one: the Marketplace exclusion markers, the section order,
+the header, the writing rules and the made-up data screenshots use.
 
 ## Companion SDKs
 
@@ -173,7 +174,8 @@ Read `references/lovelace-cards.md` when the deliverable is a **frontend custom
 card** rather than a Python integration — a zero-build web component shipped as
 a HACS plugin/dashboard resource. It covers card-vs-integration, repo layout,
 the web-component contract (`setConfig`/`set hass`/`getStubConfig`/
-`customCards`), the visual editor (`getConfigForm` or a custom `ha-form`
+`customCards`), the frontend's native components a card can build on (tiles,
+buttons, state icons), the visual editor (`getConfigForm` or a custom `ha-form`
 element), picker suggestions, internationalization, manual vs.
 HACS install, and the CI/release flow. The Python conventions and testing
 sections above do **not** apply to cards.

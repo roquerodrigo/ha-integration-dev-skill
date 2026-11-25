@@ -168,6 +168,50 @@ produced the code.
   against `hacs.json` and `manifest.json`.
 - Public repository: nothing about the maintainer's own setup or tooling.
 
+## Screenshots
+
+A screenshot is public too, so it shows the real UI with made-up data. Nothing
+from the maintainer's home goes in: no real device, entity, area, person or
+network names, no real values that identify a home.
+
+- Names are generic and in the language of the repository's prose (English,
+  or the language of the `country` in `hacs.json`): "Front Door", "Robot
+  Vacuum", "Leak Sensor", never the names on the instance the shot was taken
+  from.
+- The card or page also runs in that language, so its own labels match the
+  names around them.
+- Pick values that show every state the README describes (a low, a warning
+  and a full battery, an unavailable entity), not whatever the home happens to
+  report.
+- For a card, render it on a live dashboard with a fabricated `hass`: start
+  from the real object so the frontend keeps formatting and theming, and
+  replace `states`, `entities`, `devices` and the language. A sketch for
+  Playwright:
+  ```js
+  await page.locator("my-card").evaluate((card, states) => {
+    const real = card.hass ?? card._hass;
+    const fake = Object.create(real);
+    Object.defineProperties(fake, {
+      states: { value: states },
+      entities: { value: {} },
+      devices: { value: {} },
+      locale: { value: { ...real.locale, language: "en" } },
+      language: { value: "en" },
+    });
+    card.setConfig({ /* the options the README shows */ });
+    card.hass = fake;
+    // Stop the dashboard from pushing the real hass back on the next update.
+    Object.defineProperty(card, "hass", { set() {}, configurable: true });
+  }, fabricatedStates);
+  await page.locator("my-card").screenshot({ path: "assets/preview.png" });
+  ```
+- Take the shot at `deviceScaleFactor: 2`, of the element alone rather than
+  the whole page, and a phone width shot at about 390 px when the layout
+  changes there.
+- A shot that once showed real names is replaced in the same branch before it
+  merges, and the branch is squashed so the old image does not stay in the
+  history.
+
 ## CONTRIBUTING.md
 
 Owns the developer content that leaves the README: setup (`scripts/setup`), a
