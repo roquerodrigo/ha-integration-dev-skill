@@ -209,6 +209,9 @@ Rules:
   then follow automatically.
 - **`<ha-icon>` sizes itself** from `var(--mdc-icon-size, 24px)`. Don't override
   it unless you deliberately want a non-standard size.
+- **Build from the frontend's own components** when one fits, so the card
+  looks and behaves like the built-in cards around it. See "Native frontend
+  components" below.
 - **Read `hass.states` / `hass.entities` / `hass.devices`** for auto-discovery;
   prefer the device name (`devices[id].name_by_user || .name`) over a raw
   entity's `friendly_name`.
@@ -225,6 +228,73 @@ Rules:
   ```
   Only trusted, card-owned fragments (your own `<style>` block, icon names
   you validated) may skip it.
+
+## Native frontend components
+
+Home Assistant's frontend defines its components globally, so a card can use
+them by tag name, even from `innerHTML`. They are internal, not a public API:
+check each one against the source of the frontend version your `hacs.json`
+minimum ships (`home-assistant/frontend`, tag `YYYYMMDD.N`, under
+`src/components/`) before relying on its properties or slots.
+
+**Use only elements that are loaded wherever the card runs.** The frontend
+splits its code, so many components are defined only after the page that
+needs them loads. An element that is not defined yet renders as an empty tag
+and upgrades if it is defined later. Safe on every dashboard:
+
+| Element | What it gives |
+|---|---|
+| `ha-card` | The card frame, plus the `.card-header` and `.card-content` styles for children slotted into it |
+| `ha-tile-container`, `ha-tile-icon`, `ha-tile-info` | The tile card's layout, ripple, focus ring and keyboard activation (the tile card is always loaded by Lovelace) |
+| `ha-state-icon` | The icon Home Assistant shows for an entity, including a custom icon and state-based icons such as battery levels |
+| `ha-icon`, `ha-button` | Icons and buttons (`appearance`: `accent`, `filled`, `outlined`, `plain`; `variant`: `brand`, `neutral`, ...; `size`: `xs`, `s`, `m`, `l`) |
+
+Not safe from a card, because they load with specific pages or card features
+only: `ha-control-select`, `ha-button-toggle-group`, `ha-filter-chip`,
+`ha-chip-set`, `ha-bar`. Copy their look with design tokens instead (a bar:
+`--ha-bar-background-color`, `--ha-bar-border-radius`).
+
+A tile per entity, the same markup as the tile card:
+
+```html
+<ha-card class="tile" style="--tile-color: var(--state-sensor-battery-low-color)">
+  <ha-tile-container data-id="sensor.front_door_battery">
+    <ha-tile-icon slot="icon">
+      <ha-state-icon slot="icon"></ha-state-icon>
+    </ha-tile-icon>
+    <ha-tile-info slot="info">
+      <span slot="primary">Front Door</span>
+      <span slot="secondary">15%</span>
+    </ha-tile-info>
+    <div slot="features"><!-- a bar or other extra row --></div>
+  </ha-tile-container>
+</ha-card>
+```
+
+```css
+ha-tile-icon { --tile-icon-color: var(--tile-color); }
+```
+
+- **Properties without an attribute are set in JavaScript** after every
+  `innerHTML` rebuild: `container.interactive = true`, `icon.hass = hass`,
+  `icon.stateObj = stateObj`.
+- **An interactive `ha-tile-container` fires `action`**, not a plain click
+  you should rely on: listen for `action` and open more-info from it. It also
+  covers Enter on the focused tile.
+- **Slots add their own padding.** `slot="features"` gets
+  `padding: 0 12px 12px` from the container, so a background set on the
+  slotted element paints that padding too. Slot a plain wrapper and style a
+  child.
+- **The card header**: a child of `ha-card` with `class="card-header"` gets the
+  native title style, and a following `.card-content` gets the native spacing.
+  Your own rules for those elements still win, so the header can be a flex row
+  that also holds the card's buttons.
+- **State colors**: use the theme's state tokens rather than generic ones when
+  they exist, such as `--state-sensor-battery-low-color`, `-medium-color`,
+  `-high-color` and `--state-unavailable-color`, each with a generic fallback
+  (`var(--state-sensor-battery-low-color, var(--error-color))`).
+- **Verify in a browser** after a frontend update: the elements are internal
+  and their properties and slots can change between versions.
 
 ## Visual editor
 
@@ -462,7 +532,9 @@ The catalog checks of a card run these: `license`, `information`, `topics`,
 - **`topics`** — the repo must have GitHub topics:
   `gh repo edit <owner>/ha-<card-name> --add-topic home-assistant,lovelace,lovelace-card,custom-card,hacs,dashboard`
 - **`images`** — the README must contain at least one image. Add a **real
-  screenshot** to `assets/` and reference it. Prefer a genuine screenshot over
+  screenshot** of the card to `assets/` and reference it, with made-up names
+  and values as described under "Screenshots" in
+  [documentation.md](./documentation.md). Prefer a genuine screenshot over
   the `ignore: images` action input; `ignore` is a last resort for a card that
   is manual-install only and will never be in the HACS store.
 - **Release Autopilot** needs the `RELEASE_TOKEN` (a PAT with contents and
