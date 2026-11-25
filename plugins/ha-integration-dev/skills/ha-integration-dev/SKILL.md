@@ -177,5 +177,6 @@ the web-component contract (`setConfig`/`set hass`/`getStubConfig`/
 `customCards`), the frontend's native components a card can build on (tiles,
 buttons, state icons), the visual editor (`getConfigForm` or a custom `ha-form`
 element), picker suggestions, internationalization, manual vs.
-HACS install, and the CI/release flow. The Python conventions and testing
-sections above do **not** apply to cards.
+HACS install, busting the browser cache to test a card on a live instance, and
+the CI/release flow. The Python conventions and testing sections above do
+**not** apply to cards.

@@ -39,11 +39,17 @@ Layout and registration:
 - The card lives at `custom_components/<domain>/www/<card-name>.js` and is
   served through HA's static path for the integration.
 - Register it as a **Lovelace dashboard resource** (created/updated by the
-  integration at setup, with the integration version as a `?v=` cache-buster)
-  — **not** via `frontend.add_extra_js_url`. The `add_extra_js_url` route
-  races the frontend at startup: a dashboard page loaded at boot can render
-  before the extra module is injected, and the card never defines. The
-  dashboard-resource route survives that race.
+  integration at setup, with `?v=<integration version>-<card fingerprint>` as
+  the cache-buster) — **not** via `frontend.add_extra_js_url`. The
+  `add_extra_js_url` route races the frontend at startup: a dashboard page
+  loaded at boot can render before the extra module is injected, and the card
+  never defines. The dashboard-resource route survives that race.
+- **Put a content fingerprint in the cache-buster, not just the version.** The
+  static path is served with cache headers, so a browser keeps the module it
+  fetched for a URL. With `?v=<version>` alone, a card edited without a version
+  bump (every test on a live instance) keeps its old URL, and browsers run the
+  old card. Hash the card file at setup (a short SHA-256 prefix, read in the
+  executor) and append it: any edit then changes the URL on the next setup.
 - Guard the definition for re-imports and double-registration:
   ```js
   if (!customElements.get("my-card")) {
@@ -564,9 +570,43 @@ Cards have no Python gate. Instead:
 - Deploy, then confirm the resource serves: `curl -s -o /dev/null -w '%{http_code}'
   http://<ha-host>:8123/hacsfiles/ha-<card-name>/<card-name>.js` → `200` (and the
   old URL → `404` after a rename/migration).
-- In the browser: hard-refresh (or bump `?v`), confirm there is **no** "Custom
-  element doesn't exist" error, the console shows the card's `loaded` line, and
-  the **visual editor opens** (exercises the editor element).
+- In the browser: hard-refresh (or bump `?v`, below), confirm there is **no**
+  "Custom element doesn't exist" error, the console shows the card's `loaded`
+  line, and the **visual editor opens** (exercises the editor element).
+
+### Busting the browser cache to test a card
+
+A card copied onto a live instance keeps its resource URL until something
+changes the `?v=`, and every browser that already loaded it keeps running the
+old module. To force a fresh load without waiting for a release:
+
+1. List the resources, then update **every** resource's URL through the
+   Lovelace resources API — WebSocket `lovelace/resources/list` and
+   `lovelace/resources/update` (`resource_id`, `url`, `res_type`), the
+   Settings → Dashboards → Resources page, or a Home Assistant MCP tool that
+   wraps them. Append one shared suffix, such as the current Unix timestamp, to
+   the existing query (`/docker_monitor/card.js?v=1.4.1` →
+   `?v=1.4.1-1795614862`; add `?v=<suffix>` where there is no query). Bumping
+   all of them costs nothing and leaves no stale module behind, including
+   cards that other cards depend on.
+2. Confirm it took: `lovelace/resources/list` returns the new URLs at once;
+   the `.storage/lovelace_resources` file follows a few seconds later, because
+   the collection saves with a delay.
+3. Load the dashboard and check that the card request carries the new query
+   and answers `200`, with no console errors.
+
+- **Never edit `.storage/lovelace_resources` by hand while Home Assistant
+  runs.** The collection lives in memory and the next save overwrites the
+  file, so the edit is lost or, worse, half-applied after a restart. The API
+  writes the same file safely.
+- **The bump lasts until the integration sets up again.** A registration
+  that rewrites its resource to `?v=<version>` on every setup undoes it on the
+  next restart or reload of the entry, back to the URL browsers cached with
+  the old content. A content fingerprint in the cache-buster (see "Embedded
+  companion card") makes that setup produce a new URL on its own; until a card
+  has one, bump again after each restart.
+- HACS sets its own `?v=`/`?hacstag=` on download, so a bumped HACS resource
+  simply changes again on its next update.
 
 ## Gotchas
 
@@ -581,6 +621,8 @@ Cards have no Python gate. Instead:
 - **Render-skip signature.** Serialize the *visible* state (mode, sort, title,
   language, the shown items + values) and bail when unchanged; otherwise every
   `hass` tick rebuilds the DOM and flickers.
-- **`.storage/` ownership.** On the HA host, `lovelace_resources` and `www/` are
-  usually user-owned, but `core.config_entries` is root-owned — editing it needs
-  `sudo`.
+- **`.storage/` is Home Assistant's, not yours.** Change dashboard resources
+  through the resources API (see "Busting the browser cache to test a card"),
+  never by editing `.storage/lovelace_resources`; files under `www/` and
+  `custom_components/` can be root-owned on the host, so copy cards in with
+  `docker cp` when a plain copy is refused.
