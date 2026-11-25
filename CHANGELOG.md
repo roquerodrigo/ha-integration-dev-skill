@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.9.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.8.0...v1.9.0) (2026-11-25)
+
+The skill now guides building cards on native Home Assistant frontend components and taking screenshots that use made-up data.
+
+### New features
+
+- Guidance for Lovelace custom cards now covers the native frontend components that load on every dashboard (ha-card, the tile elements, ha-state-icon, ha-button), the tile markup, and the theme's state color tokens. ([#39](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/39))
+- Documentation guidance now covers README screenshots: show the real UI with made-up generic names, in the repository's language, rendered from a fabricated hass so no data from a real home appears. ([#39](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/39))
+
 ## [1.8.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.7.1...v1.8.0) (2026-11-24)
 
 ### New features
