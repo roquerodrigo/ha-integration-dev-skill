@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.10.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.9.0...v1.10.0) (2026-11-25)
+
+### New features
+
+- The Lovelace cards reference now explains how to bust the browser cache when testing a card on a live Home Assistant instance, using the Lovelace resources API instead of editing storage files. ([#41](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/41))
+
+### Improvements
+
+- The cards guidance now recommends adding a content fingerprint to the card resource's cache-buster, so an edited card gets a new URL without a version bump. ([#41](https://github.com/roquerodrigo/ha-integration-dev-skill/pull/41))
+
 ## [1.9.0](https://github.com/roquerodrigo/ha-integration-dev-skill/compare/v1.8.0...v1.9.0) (2026-11-25)
 
 The skill now guides building cards on native Home Assistant frontend components and taking screenshots that use made-up data.
